@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Innovator's Wake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    color-scheme: dark;
+    --void:      #0A0D12;
+    --panel:     #12171F;
+    --panel-2:   #161C25;
+    --grid:      #232B36;
+    --grid-soft: #1A212B;
+    --ink:       #ECE7DA;
+    --ink-2:     #8B94A0;
+    --ink-3:     #5B6672;
+    --signal:    #5FA8E0;
+    --signal-bright: #7CC4F0;
+    --signal-dim: #3D6E92;
+    --spark:     #E8A33D;
+    --lag:       #5C6A82;
+    --border:    rgba(236,231,218,0.09);
+    --font-display: "Big Shoulders", system-ui, sans-serif;
+    --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.5;
+  }
+  .console{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px 24px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .nameplate{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--spark);
+    text-transform: uppercase;
+  }
+  h1{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(34px, 5vw, 52px);
+    letter-spacing: 0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .dek{
+    max-width: 68ch;
+    color: var(--ink-2);
+    font-size: 15px;
+  }
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px;
+  }
+  .card-title{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin: 0 0 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .stage-wrap{
+    position: relative;
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+    background: var(--void);
+    aspect-ratio: 2 / 1;
+    overflow: hidden;
+  }
+  canvas#stage{ width: 100%; height: 100%; display: block; }
+  .flash-label{
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    color: var(--spark);
+    text-transform: uppercase;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -140%);
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+  }
+  .edge-fade{
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 70px;
+    background: linear-gradient(to right, var(--void), transparent);
+    pointer-events: none;
+  }
+
+  .transport{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .gen-readout{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    margin-right: auto;
+  }
+  .gen-readout b{ font-size: 15px; color: var(--ink); font-weight: 500; }
+  button{
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  button:hover{ border-color: var(--signal-dim); }
+  button:focus-visible{ outline: 2px solid var(--signal); outline-offset: 2px; }
+  button.primary{ background: var(--spark); color: #241300; border-color: var(--spark); }
+  button.primary:hover{ background: #f0b25c; }
+
+  .stats-row{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 820px){ .stats-row{ grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 480px){ .stats-row{ grid-template-columns: 1fr; } }
+  .stat-tile{
+    background: var(--panel-2);
+    border-radius: 4px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--signal);
+  }
+  .stat-tile.lag-tile{ border-left-color: var(--lag); }
+  .stat-tile.spark-tile{ border-left-color: var(--spark); }
+  .stat-label{
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .stat-value{
+    font-family: var(--font-mono);
+    font-size: 24px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-note{ font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+
+  .controls-row{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 720px){ .controls-row{ grid-template-columns: 1fr; } }
+  .field{ margin-bottom: 14px; }
+  .field:last-child{ margin-bottom: 0; }
+  .field-label{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .field-label .fval{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--signal);
+    font-variant-numeric: tabular-nums;
+  }
+  .field-note{ font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+  input[type="range"]{
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 3px;
+    background: var(--grid); border-radius: 2px; outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--signal); border: 2px solid var(--void); cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--signal); border: 2px solid var(--void); cursor: pointer;
+  }
+
+  .model-note{ font-size: 13.5px; color: var(--ink-2); }
+  .model-note b{ color: var(--ink); font-weight: 600; }
+  footer{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  @media (prefers-reduced-motion: reduce){ button, .flash-label{ transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="console">
+  <a href="when-machines-changed-the-job.html" style='font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);text-decoration:none;display:inline-block;margin-bottom:18px;'>&larr; Back to the paper</a>
+
+  <header class="nameplate">
+    <div class="eyebrow">Agent simulation · companion instrument</div>
+    <h1>The Innovator's Wake</h1>
+    <p class="dek">Agents wander at random until an idea's pull is worth the effort of changing their mind. Occasionally one of them originates an idea near where they stand; a good one, or one enough others have already joined, is worth the effort — a bad one isn't, and dies where it started. Outside ideas occasionally arrive from off-stage, unearned by anyone here. Position is technology status: further right is more advanced. Companion to <i>Surprise Circumplex</i> — this one asks what happens across a population and over time, not what one person feels.</p>
+  </header>
+
+  <div class="card">
+    <p class="card-title"><span>Capability space</span><span id="genLabel">Generation 0</span></p>
+    <div class="stage-wrap" id="stageWrap">
+      <canvas id="stage"></canvas>
+      <div class="edge-fade"></div>
+      <div class="flash-label" id="flashLabel">Innovation ignited</div>
+    </div>
+    <div class="transport">
+      <div class="gen-readout">IDEAS SO FAR <b id="genNum">0</b></div>
+      <div class="gen-readout">RETIRED &amp; REPLACED <b id="retireNum">0</b></div>
+      <div class="gen-readout" id="offFrameNote" hidden></div>
+      <button id="playBtn">⏸ Pause</button>
+      <button id="spawnBtn">✦ Force an idea now</button>
+      <button id="resetBtn">↺ Reset population</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-tile spark-tile">
+      <div class="stat-label">Leading edge</div>
+      <div class="stat-value" id="pctLeading">0%</div>
+      <div class="stat-note">Already at (or near) the newest idea</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">Mainstream</div>
+      <div class="stat-value" id="pctMain">0%</div>
+      <div class="stat-note">Still catching up, within reach</div>
+    </div>
+    <div class="stat-tile lag-tile">
+      <div class="stat-label">Left behind</div>
+      <div class="stat-value" id="pctLag">0%</div>
+      <div class="stat-note">More than two ideas back</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">Holding status quo</div>
+      <div class="stat-value" id="pctStatus">0%</div>
+      <div class="stat-note">Wandering — no idea is worth the effort right now</div>
+    </div>
+  </div>
+
+  <div class="controls-row">
+    <div class="card">
+      <p class="card-title"><span>The ideas</span><span></span></p>
+      <div class="field">
+        <div class="field-label"><span>Innovation rate</span><span class="fval" id="vRate">1.0</span></div>
+        <input type="range" id="rate" min="10" max="300" value="100">
+        <div class="field-note">How often the most innovative agents spontaneously originate something, right where they stand.</div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span>Idea quality (average)</span><span class="fval" id="vQuality">0.60</span></div>
+        <input type="range" id="quality" min="10" max="90" value="60">
+        <div class="field-note">Most ideas are mediocre and go nowhere. A good one is what makes the effort of adopting worthwhile.</div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span>How fast ideas cool</span><span class="fval" id="vDecay">0.030</span></div>
+        <input type="range" id="decay" min="5" max="60" value="30">
+        <div class="field-note">Good ideas linger; poor ones fade fast regardless of this setting.</div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span>External idea rate</span><span class="fval" id="vExternal">1 / 50s</span></div>
+        <input type="range" id="external" min="0" max="100" value="20">
+        <div class="field-note">Ideas arriving from outside this population entirely — nobody here earned them.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><span>The crowd &amp; the cost</span><span>Bass · Granovetter</span></p>
+      <div class="field">
+        <div class="field-label"><span>Innovation pull (p)</span><span class="fval" id="vP">0.60</span></div>
+        <input type="range" id="pCoef" min="0" max="100" value="60">
+        <div class="field-note">Pull from the idea itself, independent of any crowd — scaled by each agent's own innovativeness.</div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span>Imitation pull (q)</span><span class="fval" id="vQ">0.65</span></div>
+        <input type="range" id="qCoef" min="0" max="200" value="65">
+        <div class="field-note">Pull from a visible crowd already there — the social-contagion term.</div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span>Status-quo inertia</span><span class="fval" id="vEffort">65</span></div>
+        <input type="range" id="effort" min="0" max="150" value="65">
+        <div class="field-note">The effort cost of changing your mind. Below this threshold, an idea's pull simply isn't worth acting on.</div>
+      </div>
+      <div class="field">
+        <div class="field-label"><span>Career length</span><span class="fval" id="vCareer">150 s</span></div>
+        <input type="range" id="career" min="30" max="400" value="150">
+        <div class="field-note">Every agent's capacity to move erodes over their career — faster the more they've actually chased ideas — until they stop for good and are replaced by a recruit at the cutting edge.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card model-note">
+    <p class="card-title"><span>The model, in brief</span><span></span></p>
+    <p>Agents wander at random — Granovetter's threshold models of collective behavior (1978) are the frame: each agent only acts once the case for acting clears a personal <b>threshold</b>, here the effort cost of changing what you think, cheaper for the innovative and dearer for everyone else. Every idea carries a <b>quality</b>, fixed at birth; its pull is quality × a crowd term — Bass's diffusion model (1969) again, innovation and imitation — and an idea that never clears anyone's threshold just decays where it started, unadopted. Occasional <b>outside ideas</b> arrive unearned by anyone in this population, the way an adjacent field's breakthrough shows up in yours. The tension is the point: standing still is free; moving costs effort; only a good enough idea, or a big enough crowd already there, is worth paying it. Pull also fades with distance faster than it used to, and new ideas favor agents already near the front — so the frontier keeps advancing rather than idling in place, and falling behind has a real spatial cost, not just a timing one. The defaults below are tuned so roughly a fifth to a third of the population sits this out at any moment, while the most innovative agents stay tightly bunched just ahead of everyone else — a small vanguard the rest is chasing, not a lone rocket departing alone. None of this stays separated on its own, though: anyone can in principle still catch up, so left long enough the population just cycles back into one cluster. A <b>career</b> makes the separation permanent. Every agent's capacity to move erodes over time — faster the more they've actually chased ideas, since adapting itself is what wears you down — until it hits zero and they simply stop, visibly fading and shrinking as they wind down. A stopped agent is retired and replaced by a fresh recruit at the current cutting edge: full capacity, born already caught up. That's what keeps the frontier a frontier — not distance, but succession.</p>
+  </div>
+
+  <footer>A simplified illustrative model, not a validated diffusion model — built to accompany "Psychology of Novelty &amp; Habit Disruption" in <i>When Machines Changed the Job</i>.</footer>
+
+</div>
+
+<script>
+(function(){
+  var N = 140;
+  // Separation has to be able to stand up to ADOPT_ACCEL, or every adopter is
+  // crushed onto the idea's exact point and the whole population renders as one dot.
+  var W_SEP = 140, R_SEP = 24, ARRIVE_R = 40;
+  var ATTRACT_SCALE = 95, MAX_RANGE = 100, R_CROWD = 60, SAT_C = 8, FRONTIER_SCALE = 70;
+  var BASE_SPEED = 55;
+  var MAX_ATTRACTORS = 5;
+  var IDEA_RATE_BASE = 0.05, INTERNAL_MIN_GAP = 1.0;
+  var ADOPT_ACCEL = 140, WANDER_JITTER = 20;
+
+  var agents = [], attractors = [];
+  var nextInternalOk = 0, genCount = 0;
+  var lastFlash = null;
+  var playing = true;
+  var lastT = null;
+  var WORLD_H = 220;
+  // Horizontal and vertical scales are independent. Position on x is the only
+  // axis carrying meaning (technology status); y is just spread to keep agents
+  // from overlapping. Markers are drawn at explicit sizes rather than through a
+  // canvas transform, so decoupling the two distorts nothing -- it just stops a
+  // 380-unit-tall world from dictating the zoom for a population 20 units wide.
+  var camCenterX = 0, camCenterY = WORLD_H / 2, camScaleX = 1, camScaleY = 1;
+  var SCALE_MIN = 0.01, SCALE_MAX_X = 14, SCALE_MAX_Y = 6, MAX_ANISOTROPY = 6;
+  var EASE_CONTRACT = 0.18, EASE_EXPAND = 0.05, EASE_PAN = 0.08;
+
+  function clamp(x, a, b){ return Math.max(a, Math.min(b, x)); }
+  function gaussian(){
+    var u = 1 - Math.random(), v = Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  function lerp(a, b, t){ return a + (b - a) * t; }
+
+  var canvas = document.getElementById('stage');
+  var ctx = canvas.getContext('2d');
+  var wrap = document.getElementById('stageWrap');
+  var dpr = Math.max(1, window.devicePixelRatio || 1);
+  var cssW = 800, cssH = 400;
+
+  function fitCanvas(){
+    var r = wrap.getBoundingClientRect();
+    cssW = r.width; cssH = r.height;
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  var els = {
+    rate: document.getElementById('rate'),
+    quality: document.getElementById('quality'),
+    decay: document.getElementById('decay'),
+    external: document.getElementById('external'),
+    pCoef: document.getElementById('pCoef'),
+    qCoef: document.getElementById('qCoef'),
+    effort: document.getElementById('effort'),
+    career: document.getElementById('career'),
+  };
+  var vEls = {
+    rate: document.getElementById('vRate'),
+    quality: document.getElementById('vQuality'),
+    decay: document.getElementById('vDecay'),
+    external: document.getElementById('vExternal'),
+    pCoef: document.getElementById('vP'),
+    qCoef: document.getElementById('vQ'),
+    effort: document.getElementById('vEffort'),
+    career: document.getElementById('vCareer'),
+  };
+  function readParams(){
+    return {
+      rate: (+els.rate.value) / 100,
+      quality: (+els.quality.value) / 100,
+      decay: (+els.decay.value) / 1000,
+      external: (+els.external.value) / 1000,
+      pCoef: (+els.pCoef.value) / 100,
+      qCoef: (+els.qCoef.value) / 100,
+      effort: +els.effort.value,
+      career: +els.career.value,
+    };
+  }
+  function refreshReadouts(){
+    var p = readParams();
+    vEls.rate.textContent = p.rate.toFixed(1);
+    vEls.quality.textContent = p.quality.toFixed(2);
+    vEls.decay.textContent = p.decay.toFixed(3);
+    vEls.external.textContent = p.external > 0 ? ('1 / ' + Math.round(1 / p.external) + 's') : 'off';
+    vEls.pCoef.textContent = p.pCoef.toFixed(2);
+    vEls.qCoef.textContent = p.qCoef.toFixed(2);
+    vEls.effort.textContent = String(Math.round(p.effort));
+    vEls.career.textContent = p.career + ' s';
+  }
+  Object.keys(els).forEach(function(k){ els[k].addEventListener('input', refreshReadouts); });
+  refreshReadouts();
+
+  function makeRecruit(x, y){
+    var innov = clamp(0.5 + gaussian() * 0.18, 0.02, 0.99);
+    return {
+      x: x, y: y, vx: 0, vy: 0,
+      innov: innov,
+      wanderSpeed: 8 + Math.random() * 14,
+      committed: false,
+      // not everyone arrives with the same room to keep changing
+      capacity: clamp(1 + gaussian() * 0.28, 0.2, 1.8)
+    };
+  }
+
+  function seedAgents(){
+    agents = [];
+    for (var i = 0; i < N; i++){
+      var a = makeRecruit((Math.random() - 0.5) * 200, 40 + Math.random() * (WORLD_H - 80));
+      a.vx = (Math.random() - 0.5) * 10; a.vy = (Math.random() - 0.5) * 10;
+      // start mid-stream: a real population spans career stages rather than
+      // all being fresh, which would retire the whole cohort in lockstep
+      a.capacity *= 0.12 + Math.random() * 0.88;
+      agents.push(a);
+    }
+  }
+
+  function spawnIdea(x, y, quality, external, label){
+    attractors.push({ x: x, y: y, born: simTime, quality: quality, external: !!external });
+    if (attractors.length > MAX_ATTRACTORS) attractors.shift();
+    genCount += 1;
+    lastFlash = { x: x, y: y, t: simTime, label: label, external: !!external };
+    document.getElementById('genNum').textContent = genCount;
+    document.getElementById('genLabel').textContent = 'Generation ' + genCount;
+  }
+
+  var simTime = 0;
+
+  function updateSim(dt){
+    var p = readParams();
+    simTime += dt;
+    var retirees = [];
+
+    // spontaneous internal ideas: any agent can originate one, weighted hard toward innovativeness
+    // and toward already being near the current leading edge -- so the frontier keeps
+    // advancing instead of new ideas popping up anywhere among scattered innovative agents
+    if (agents.length && simTime >= nextInternalOk){
+      var frontierX = -Infinity;
+      for (var fi = 0; fi < agents.length; fi++){ if (agents[fi].x > frontierX) frontierX = agents[fi].x; }
+      for (var ii = 0; ii < agents.length; ii++){
+        var ag = agents[ii];
+        var frontierBoost = Math.exp(-(frontierX - ag.x) / FRONTIER_SCALE);
+        var chance = IDEA_RATE_BASE * p.rate * ag.innov * ag.innov * frontierBoost * dt;
+        if (Math.random() < chance){
+          var q = clamp(p.quality + gaussian() * 0.16, 0.05, 1);
+          spawnIdea(ag.x + 10 + Math.random() * 18, clamp(ag.y + (Math.random() - 0.5) * 40, 30, WORLD_H - 30), q, false, 'Innovation ignited');
+          nextInternalOk = simTime + INTERNAL_MIN_GAP;
+          break;
+        }
+      }
+    }
+
+    // external ideas: unearned by this population, arriving from off-stage
+    if (agents.length && p.external > 0 && Math.random() < p.external * dt){
+      var cx = 0;
+      for (var ci = 0; ci < agents.length; ci++) cx += agents[ci].x;
+      cx /= agents.length;
+      var exQ = clamp(p.quality + gaussian() * 0.28, 0.05, 1);
+      // ahead of the crowd, but within the range where adoption is actually
+      // possible -- 90-320 units out was far beyond MAX_RANGE, so outside ideas
+      // were inert scenery that also hijacked the camera's framing
+      spawnIdea(cx + 22 + Math.random() * 55, 30 + Math.random() * (WORLD_H - 60), exQ, true, 'Outside idea arrives');
+    }
+
+    // precompute idea strengths (quality-scaled, quality also slows decay) + crowd counts
+    var astate = attractors.map(function(at){
+      var age = simTime - at.born;
+      var effDecay = p.decay * (1.6 - at.quality);
+      var strength = at.quality * Math.exp(-age * effDecay);
+      var crowd = 0;
+      for (var i = 0; i < agents.length; i++){
+        var dx = agents[i].x - at.x, dy = agents[i].y - at.y;
+        if (dx * dx + dy * dy < R_CROWD * R_CROWD) crowd++;
+      }
+      var social = crowd / (crowd + SAT_C);
+      return { x: at.x, y: at.y, strength: strength, social: social };
+    });
+
+    for (var i = 0; i < agents.length; i++){
+      var a = agents[i];
+      var sepX = 0, sepY = 0;
+      for (var j = 0; j < agents.length; j++){
+        if (i === j) continue;
+        var b = agents[j];
+        var dx = b.x - a.x, dy = b.y - a.y;
+        var d2 = dx * dx + dy * dy;
+        if (d2 < R_SEP * R_SEP && d2 > 0.0001){
+          sepX -= dx / d2; sepY -= dy / d2;
+        }
+      }
+
+      var pullX = 0, pullY = 0;
+      for (var k = 0; k < astate.length; k++){
+        var at = astate[k];
+        var ddx = at.x - a.x, ddy = at.y - a.y;
+        var dist = Math.sqrt(ddx * ddx + ddy * ddy) + 0.001;
+        var falloff = MAX_RANGE / (MAX_RANGE + dist);
+        // adoption is arriving at an idea, not being crushed into it: pull fades
+        // out over the last stretch, so adopters settle as a cloud around it
+        var arrive = clamp(dist / ARRIVE_R, 0, 1);
+        var pull = (p.pCoef * a.innov + p.qCoef * at.social) * at.strength * falloff * arrive;
+        pullX += (ddx / dist) * pull * ATTRACT_SCALE;
+        pullY += (ddy / dist) * pull * ATTRACT_SCALE;
+      }
+      var pullMag = Math.hypot(pullX, pullY);
+      var effortCost = p.effort * (1.4 - a.innov);
+
+      var ax = sepX * W_SEP, ay = sepY * W_SEP;
+      if (pullMag > effortCost && pullMag > 0.0001){
+        // worth the effort: steer toward the idea, ramping in with the surplus over threshold
+        var surplus = clamp((pullMag - effortCost) / (effortCost + 30), 0, 1);
+        ax += (pullX / pullMag) * ADOPT_ACCEL * surplus;
+        ay += (pullY / pullMag) * ADOPT_ACCEL * surplus;
+        a.committed = true;
+      } else {
+        // not worth it: wander at random, own pace
+        ax += (Math.random() - 0.5) * WANDER_JITTER;
+        ay += (Math.random() - 0.5) * WANDER_JITTER;
+        a.committed = false;
+      }
+
+      // soft vertical bounds (fixed world height, independent of viewport)
+      if (a.y < 40) ay += (40 - a.y) * 0.8;
+      if (a.y > WORLD_H - 40) ay += (WORLD_H - 40 - a.y) * 0.8;
+
+      a.vx = (a.vx + ax * dt) * Math.pow(0.985, dt * 60);
+      a.vy = (a.vy + ay * dt) * Math.pow(0.985, dt * 60);
+      var baseCapSpeed = a.committed ? BASE_SPEED * (0.55 + 1.5 * a.innov) : a.wanderSpeed;
+      // capacity gradually erodes how far anyone can still move; capped so an
+      // agent born with an unusually large reserve doesn't outrun the model
+      var capSpeed = baseCapSpeed * Math.min(a.capacity, 1.25);
+      var sp = Math.hypot(a.vx, a.vy);
+      if (sp > capSpeed){ a.vx = a.vx / sp * capSpeed; a.vy = a.vy / sp * capSpeed; }
+      a.x += a.vx * dt;
+      a.y += a.vy * dt;
+      a.y = clamp(a.y, 10, WORLD_H - 10); // hard safety net: soft force above can be outrun near a crowded idea
+
+      // a career slowly runs out -- aging alone spends it; actually moving spends it faster
+      var ageRate = 1 / p.career;
+      var wear = ageRate * 2.4 * (sp / BASE_SPEED);
+      a.capacity = clamp(a.capacity - (ageRate + wear) * dt, 0, 1);
+      if (a.capacity <= 0.02) retirees.push(i);
+    }
+
+    if (retirees.length){
+      var recruitAt = attractors.length ? attractors[attractors.length - 1] : null;
+      var rx = recruitAt ? recruitAt.x : frontierXForRecruit();
+      var ry = recruitAt ? recruitAt.y : WORLD_H / 2;
+      for (var ri = 0; ri < retirees.length; ri++){
+        retireCount += 1;
+        agents[retirees[ri]] = makeRecruit(rx + 8 + Math.random() * 14, clamp(ry + (Math.random() - 0.5) * 40, 20, WORLD_H - 20));
+      }
+      document.getElementById('retireNum').textContent = retireCount;
+    }
+  }
+  function frontierXForRecruit(){
+    var mx = 0;
+    for (var i = 0; i < agents.length; i++){ if (agents[i].x > mx) mx = agents[i].x; }
+    return mx;
+  }
+  var retireCount = 0;
+
+  var TIER_UNIT = 9; // calibrated to this mechanic's actual clustering scale, not the old leap-distance one
+  function computeStats(){
+    if (!attractors.length || !agents.length) return { lead: 0, main: 0, lag: 100, status: 100 };
+    var newest = attractors[attractors.length - 1].x;
+    var lead = 0, main = 0, lag = 0, status = 0;
+    for (var i = 0; i < agents.length; i++){
+      var ag = agents[i];
+      var rel = newest - ag.x;
+      if (rel < TIER_UNIT * 0.6) lead++;
+      else if (rel < TIER_UNIT * 2.2) main++;
+      else lag++;
+      if (!ag.committed) status++;
+    }
+    var tot = agents.length;
+    return {
+      lead: Math.round(100 * lead / tot), main: Math.round(100 * main / tot),
+      lag: Math.round(100 * lag / tot), status: Math.round(100 * status / tot)
+    };
+  }
+
+  var LAG_C = [92, 106, 130], SPARK_C = [232, 163, 61];
+  function agentColor(innov){
+    var c = [ lerp(LAG_C[0], SPARK_C[0], innov), lerp(LAG_C[1], SPARK_C[1], innov), lerp(LAG_C[2], SPARK_C[2], innov) ];
+    return 'rgb(' + c[0].toFixed(0) + ',' + c[1].toFixed(0) + ',' + c[2].toFixed(0) + ')';
+  }
+
+  var flashLabelEl = document.getElementById('flashLabel');
+
+  function percentile(sortedArr, q){
+    return sortedArr[clamp(Math.floor(q * (sortedArr.length - 1)), 0, sortedArr.length - 1)];
+  }
+
+  // where the camera SHOULD be to keep the frontier/vanguard/left-behind distinction
+  // legible. Fitting the literal min-to-max would let one agent who has randomly
+  // wandered off alone force everyone else into a handful of indistinguishable
+  // pixels -- so this fits the middle 94% of the population (a couple of true loners
+  // can sit outside the frame) plus every live idea, which is never trimmed.
+  function cameraTarget(){
+    if (!agents.length) return { cx: 0, cy: WORLD_H / 2, scaleX: 1, scaleY: 1, minX: -50, maxX: 50, minY: 0, maxY: WORLD_H };
+    var xs = agents.map(function(a){ return a.x; }).sort(function(a, b){ return a - b; });
+    var minX = percentile(xs, 0.06), maxX = percentile(xs, 0.94);
+
+    // Ideas are shown, but a single distant one can't hijack the framing: it may
+    // stretch the view by at most a population-span or so beyond the crowd.
+    var ideaLimit = Math.max(70, (maxX - minX) * 1.5);
+    var loCap = minX - ideaLimit, hiCap = maxX + ideaLimit;
+    for (var j = 0; j < attractors.length; j++){
+      var ix = clamp(attractors[j].x, loCap, hiCap);
+      if (ix < minX) minX = ix;
+      if (ix > maxX) maxX = ix;
+    }
+
+    var padX = Math.max(18, (maxX - minX) * 0.12);
+    var spanX = Math.max(45, (maxX - minX) + padX * 2);
+    var spanY = WORLD_H + 20; // agents fill the world band; framing it is stable
+    var scaleY = clamp(cssH / spanY, SCALE_MIN, SCALE_MAX_Y);
+    // Capping x against y keeps the crowd from reading as vertical streaks. It only
+    // ever lowers scaleX (a wider view), so the fit guarantee below still holds.
+    var scaleX = Math.min(clamp(cssW / spanX, SCALE_MIN, SCALE_MAX_X), scaleY * MAX_ANISOTROPY);
+    return {
+      cx: (minX + maxX) / 2, cy: WORLD_H / 2,
+      scaleX: scaleX, scaleY: scaleY,
+      minX: minX - padX, maxX: maxX + padX, minY: -10, maxY: WORLD_H + 10
+    };
+  }
+  var lastOffFrameCount = 0;
+  function snapCamera(){
+    var t = cameraTarget();
+    camCenterX = t.cx; camCenterY = t.cy; camScaleX = t.scaleX; camScaleY = t.scaleY;
+  }
+  function w2s(wx, wy){
+    return { x: (wx - camCenterX) * camScaleX + cssW / 2, y: (wy - camCenterY) * camScaleY + cssH / 2 };
+  }
+
+  function render(){
+    var p = readParams();
+    var tgt = cameraTarget();
+    // contract (zoom out) fast so nobody ever drifts out of frame; expand (zoom in) gently
+    var scaleEase = tgt.scaleX < camScaleX ? EASE_CONTRACT : EASE_EXPAND;
+    camCenterX += (tgt.cx - camCenterX) * EASE_PAN;
+    camCenterY += (tgt.cy - camCenterY) * EASE_PAN;
+    camScaleX += (tgt.scaleX - camScaleX) * scaleEase;
+    camScaleY += (tgt.scaleY - camScaleY) * EASE_EXPAND;
+
+    // Hard guarantee, not a tuned easing: end every frame with the tracked bounds
+    // genuinely inside the viewport. Easing may lag, but it can never leave the
+    // action off-screen.
+    if (camScaleX > tgt.scaleX) camScaleX = tgt.scaleX;
+    if (camScaleY > tgt.scaleY) camScaleY = tgt.scaleY;
+    var halfW = (cssW / 2) / camScaleX, halfH = (cssH / 2) / camScaleY;
+    camCenterX = clamp(camCenterX, tgt.maxX - halfW, tgt.minX + halfW);
+    camCenterY = clamp(camCenterY, tgt.maxY - halfH, tgt.minY + halfH);
+
+    var sizeMul = clamp(Math.sqrt(camScaleX * camScaleY) * 0.62, 0.6, 2.0);
+
+    // trailing fade instead of hard clear -- cleared briskly so dots stay
+    // crisp and distinct rather than smearing into one mass at tight zoom
+    ctx.fillStyle = 'rgba(10,13,18,0.42)';
+    ctx.fillRect(0, 0, cssW, cssH);
+
+    // scrolling grid, spaced to stay roughly constant on screen as scale changes
+    ctx.strokeStyle = 'rgba(35,43,54,0.5)';
+    ctx.lineWidth = 1;
+    var worldStep = Math.max(5, Math.round((90 / camScaleX) / 5) * 5);
+    var halfSpanWorld = (cssW / 2) / camScaleX;
+    var gStart = Math.floor((camCenterX - halfSpanWorld) / worldStep) * worldStep;
+    var gEnd = camCenterX + halfSpanWorld + worldStep;
+    for (var gx = gStart; gx < gEnd; gx += worldStep){
+      var sx2 = w2s(gx, 0).x;
+      ctx.beginPath(); ctx.moveTo(sx2, 0); ctx.lineTo(sx2, cssH); ctx.stroke();
+    }
+
+    // ideas: internal ones as blue rings, external ones as violet diamonds.
+    // Faded-out ideas are skipped entirely rather than left as a lingering ghost
+    // ring, so the display isn't cluttered with up to MAX_ATTRACTORS stale circles.
+    for (var i = 0; i < attractors.length; i++){
+      var at = attractors[i];
+      var age = simTime - at.born;
+      var effDecay = p.decay * (1.6 - at.quality);
+      var strength = at.quality * Math.exp(-age * effDecay);
+      if (strength < 0.05) continue;
+      var pos = w2s(at.x, at.y);
+      if (at.external){
+        var s = (5 + strength * 8) * sizeMul;
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        ctx.rotate(Math.PI / 4);
+        ctx.fillStyle = 'rgba(192,140,232,' + (strength * 0.85).toFixed(2) + ')';
+        ctx.fillRect(-s / 2, -s / 2, s, s);
+        ctx.strokeStyle = 'rgba(192,140,232,' + (strength * 0.7).toFixed(2) + ')';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(-s * 0.95, -s * 0.95, s * 1.9, s * 1.9);
+        ctx.restore();
+      } else {
+        var ringR = (4 + strength * 9) * sizeMul;
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(95,168,224,' + (strength * 0.75).toFixed(2) + ')';
+        ctx.lineWidth = 1.5;
+        ctx.arc(pos.x, pos.y, ringR, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba(124,196,240,' + (strength * 0.8).toFixed(2) + ')';
+        ctx.arc(pos.x, pos.y, (2 + strength * 2.5) * sizeMul, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // agents as heading-oriented triangles -- fading and shrinking as their
+    // career capacity runs out, so a winding-down straggler reads as such
+    // well before it actually stops and gets replaced
+    var offFrame = 0;
+    for (i = 0; i < agents.length; i++){
+      var a = agents[i];
+      var pa = w2s(a.x, a.y);
+      if (pa.x < 0 || pa.x > cssW) offFrame++;
+      var ang = Math.atan2(a.vy, a.vx);
+      var capShown = Math.min(a.capacity, 1.25);
+      var careerMul = 0.45 + 0.55 * capShown;
+      var len = 5.5 * sizeMul * careerMul, wid = 3.4 * sizeMul * careerMul;
+      ctx.save();
+      ctx.globalAlpha = clamp(0.3 + 0.7 * capShown, 0.3, 1);
+      ctx.translate(pa.x, pa.y);
+      ctx.rotate(ang);
+      ctx.beginPath();
+      ctx.moveTo(len, 0);
+      ctx.lineTo(-len * 0.7, wid);
+      ctx.lineTo(-len * 0.7, -wid);
+      ctx.closePath();
+      ctx.fillStyle = agentColor(a.innov);
+      ctx.fill();
+      ctx.restore();
+    }
+    lastOffFrameCount = offFrame;
+
+    // ignite flash
+    if (lastFlash){
+      var age2 = simTime - lastFlash.t;
+      if (age2 < 0.7){
+        var t = age2 / 0.7;
+        var pf = w2s(lastFlash.x, lastFlash.y);
+        var r = (8 + t * 60) * sizeMul;
+        var flashRGB = lastFlash.external ? '192,140,232' : '232,163,61';
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(' + flashRGB + ',' + (1 - t).toFixed(2) + ')';
+        ctx.lineWidth = 2;
+        ctx.arc(pf.x, pf.y, r, 0, Math.PI * 2);
+        ctx.stroke();
+        flashLabelEl.textContent = lastFlash.label || 'Innovation ignited';
+        flashLabelEl.style.color = lastFlash.external ? '#C08CE8' : '';
+        flashLabelEl.style.left = clamp(pf.x, 90, cssW - 90) + 'px';
+        flashLabelEl.style.top = clamp(pf.y, 22, cssH - 12) + 'px';
+        flashLabelEl.style.opacity = (1 - t).toFixed(2);
+      } else {
+        flashLabelEl.style.opacity = 0;
+      }
+    }
+
+    var stats = computeStats();
+    document.getElementById('pctLeading').textContent = stats.lead + '%';
+    document.getElementById('pctMain').textContent = stats.main + '%';
+    document.getElementById('pctLag').textContent = stats.lag + '%';
+    document.getElementById('pctStatus').textContent = stats.status + '%';
+
+    var offNote = document.getElementById('offFrameNote');
+    if (lastOffFrameCount > 0){
+      offNote.textContent = '(+' + lastOffFrameCount + ' further out, off-frame)';
+      offNote.hidden = false;
+    } else {
+      offNote.hidden = true;
+    }
+  }
+
+  function frame(t){
+    if (lastT == null) lastT = t;
+    var dt = Math.min(0.05, (t - lastT) / 1000);
+    lastT = t;
+    if (playing){ updateSim(dt); render(); }
+    requestAnimationFrame(frame);
+  }
+
+  function fastForward(seconds){
+    var steps = Math.round(seconds / 0.1);
+    for (var s = 0; s < steps; s++) updateSim(0.1);
+  }
+
+  function init(){
+    fitCanvas();
+    seedAgents();
+    nextInternalOk = 1.5;
+    fastForward(38);
+    snapCamera();
+    render();
+  }
+
+  document.getElementById('playBtn').addEventListener('click', function(){
+    playing = !playing;
+    this.textContent = playing ? '⏸ Pause' : '▶ Play';
+  });
+  document.getElementById('spawnBtn').addEventListener('click', function(){
+    if (!agents.length) return;
+    var p = readParams();
+    var best = agents[0];
+    for (var i = 1; i < agents.length; i++){ if (agents[i].innov > best.innov) best = agents[i]; }
+    var q = clamp(p.quality + gaussian() * 0.16, 0.05, 1);
+    spawnIdea(best.x + 10 + Math.random() * 18, clamp(best.y + (Math.random() - 0.5) * 40, 30, WORLD_H - 30), q, false, 'Innovation ignited');
+    nextInternalOk = simTime + INTERNAL_MIN_GAP;
+    if (!playing) render();
+  });
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    attractors = []; genCount = 0; retireCount = 0; simTime = 0; lastFlash = null;
+    document.getElementById('genNum').textContent = 0;
+    document.getElementById('retireNum').textContent = 0;
+    document.getElementById('genLabel').textContent = 'Generation 0';
+    seedAgents();
+    nextInternalOk = 1.5;
+    fastForward(38);
+    snapCamera();
+    render();
+  });
+  window.addEventListener('resize', fitCanvas);
+
+  init();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Capability Gate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    color-scheme: dark;
+    --void:      #0A0D12;
+    --panel:     #12171F;
+    --panel-2:   #161C25;
+    --grid:      #232B36;
+    --ink:       #ECE7DA;
+    --ink-2:     #A6AEB9;
+    --ink-3:     #5B6672;
+    --signal:    #5FA8E0;
+    --spark:     #E8A33D;
+    --good:      #199e70;
+    --warn:      #d95926;
+    --border:    rgba(236,231,218,0.09);
+    --font-display: "Big Shoulders", system-ui, sans-serif;
+    --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  }
+  *{ box-sizing: border-box; }
+  body{ background: var(--void); color: var(--ink); font-family: var(--font-body); line-height: 1.65; }
+  .doc{ max-width: 860px; margin: 0 auto; padding: 40px 24px 64px; display: flex; flex-direction: column; gap: 34px; }
+
+  .nameplate{ display: flex; flex-direction: column; gap: 10px; padding-bottom: 22px; border-bottom: 1px solid var(--border); }
+  .eyebrow{ font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; color: var(--spark); text-transform: uppercase; }
+  h1{ font-family: var(--font-display); font-weight: 700; font-size: clamp(38px, 6vw, 60px); letter-spacing: 0.01em; margin: 0; line-height: 1.02; text-wrap: balance; }
+  .dek{ color: var(--ink-2); font-size: 16.5px; max-width: 62ch; }
+
+  section{ display: flex; flex-direction: column; gap: 14px; }
+  h2{
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--signal); margin: 0; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+  h3{ font-family: var(--font-body); font-size: 17px; font-weight: 600; color: var(--ink); margin: 0 0 2px; }
+  p{ margin: 0; max-width: 68ch; font-size: 15.5px; color: var(--ink-2); }
+  p strong, li strong{ color: var(--ink); font-weight: 600; }
+  em{ color: var(--ink); font-style: italic; }
+
+  .attr{ display: flex; flex-direction: column; gap: 5px; padding: 16px 18px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; }
+  .attr-head{ display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .tag{
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.09em; text-transform: uppercase;
+    padding: 3px 7px; border-radius: 3px; flex: none; white-space: nowrap;
+  }
+  .tag-model{ background: rgba(95,168,224,0.14); color: var(--signal); }
+  .tag-lit{ background: rgba(25,158,112,0.15); color: var(--good); }
+  .tag-judge{ background: rgba(232,163,61,0.14); color: var(--spark); }
+  .attr p{ font-size: 14.5px; }
+
+  .table-wrap{ overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; }
+  table{ border-collapse: collapse; width: 100%; min-width: 660px; font-size: 14px; }
+  th, td{ text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th{
+    font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--ink-3); background: var(--panel-2); font-weight: 500;
+  }
+  td{ color: var(--ink-2); }
+  td:first-child{ color: var(--ink); font-weight: 600; width: 27%; }
+  tr:last-child td{ border-bottom: none; }
+
+  ol, ul{ margin: 0; padding-left: 20px; color: var(--ink-2); font-size: 15.5px; max-width: 68ch; }
+  li{ margin-bottom: 9px; }
+  li:last-child{ margin-bottom: 0; }
+
+  .callout{ padding: 16px 18px; background: var(--panel); border-left: 3px solid var(--spark); border-radius: 4px; }
+  .callout.warn{ border-left-color: var(--warn); }
+  .callout p{ font-size: 14.5px; }
+  .callout .callout-title{ font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--spark); margin-bottom: 7px; }
+  .callout.warn .callout-title{ color: var(--warn); }
+
+  .refs{ font-size: 13px; color: var(--ink-3); }
+  .refs p{ font-size: 13px; color: var(--ink-3); margin-bottom: 5px; }
+  footer{ font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); padding-top: 18px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<div class="doc">
+  <a href="when-machines-changed-the-job.html" style='font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);text-decoration:none;display:inline-block;margin-bottom:18px;'>&larr; Back to the paper</a>
+
+  <header class="nameplate">
+    <div class="eyebrow">Theory note · companion to the agent simulations</div>
+    <h1>The Capability Gate</h1>
+    <p class="dek">What actually creates a second tier capable of taking work off your frontier — and the data you would need to collect before spending anything on it.</p>
+  </header>
+
+  <section>
+    <h2>Where this came from</h2>
+    <p>A simulation of an organisation adopting a stream of new technologies produced one robust result and one failure. Being <strong>able to hand support work down</strong> was worth roughly 30% of organisational output, and held across every population size and integration step tested. <strong>Training budget was worth almost nothing</strong> — and an earlier build that showed a large positive effect turned out to be a numerical artifact, swinging from +58% to −1.4% on timestep alone.</p>
+    <p>The mechanism behind the robust half is worth stating precisely, because it is the whole argument: a handoff only succeeds when the receiver has <em>already independently operated that specific technology</em>. When the model instead allowed handoff to anyone standing nearby, the entire effect vanished — because in a working organisation there is always somebody standing nearby. Proximity is free. Capability is not.</p>
+  </section>
+
+  <section>
+    <h2>The mechanism has a name</h2>
+    <p>This is not a new idea, which is reassuring rather than disappointing. Cohen &amp; Levinthal's <em>absorptive capacity</em> (1990) holds that an organisation's ability to take up new knowledge is a function of its <strong>prior related knowledge</strong> — and that this capacity accrues largely as a by-product of doing the work, not as a product of being told about it. You cannot absorb what you have no foundation in.</p>
+    <p>That is the capability gate, arrived at from the other direction. It explains why the training lever underperformed: training that does not culminate in someone independently owning the thing produces awareness, not absorptive capacity, and awareness cannot receive a handoff. It also reframes the policy question. The useful question is not <em>"how much should we spend on training?"</em> but <strong>"for each technology we depend on, how many people have independently operated it — and what is the cheapest way to make that number two?"</strong></p>
+  </section>
+
+  <section>
+    <h2>What produces an up-to-date second tier</h2>
+    <p>Each attribute below is tagged by where it comes from, because they are not equally well-founded and you should weight them differently.</p>
+
+    <div class="attr">
+      <div class="attr-head"><h3>1. Coverage per technology, not average skill</h3><span class="tag tag-model">from the model</span></div>
+      <p>The gate is per-technology and binary. An organisation of brilliant people who each solely own one system has <em>zero</em> handoff capacity, regardless of headcount, seniority or training spend. What matters is the count of independent operators per technology — the bus factor — not the mean capability of the staff. This is the single most actionable reframing here: it turns an unbounded investment question into a finite list of specific gaps.</p>
+    </div>
+
+    <div class="attr">
+      <div class="attr-head"><h3>2. Capability is earned by doing the work</h3><span class="tag tag-lit">literature</span></div>
+      <p>Absorptive capacity is cumulative and built through practice (Cohen &amp; Levinthal, 1990). Shadowing, documentation-reading and briefings lower the cost of a later adoption but do not themselves create a receiver. The implication is uncomfortable: the only reliable way to produce a second owner is to let someone be an owner, with the mistakes that entails.</p>
+    </div>
+
+    <div class="attr">
+      <div class="attr-head"><h3>3. Slack in the second tier</h3><span class="tag tag-model">from the model</span><span class="tag tag-lit">literature</span></div>
+      <p>In the simulation, saturated receivers refuse work, and handoff fails even where capability exists. This matches the standard queueing result that utilisation approaching capacity destroys throughput. The counterintuitive consequence: <strong>deliberately under-loading your second tier is a precondition for handoff, not a luxury.</strong> An organisation that runs everyone at full utilisation has, by construction, eliminated its own ability to shed work downward.</p>
+    </div>
+
+    <div class="attr">
+      <div class="attr-head"><h3>4. Rotation of <em>new</em> work, not just old work</h3><span class="tag tag-judge">judgement</span></div>
+      <p>If tier 1 always takes the new thing — because they are fastest, which they are — then tier 2 never passes the gate, and handoff capacity decays permanently. The real training budget is therefore an <strong>assignment policy</strong>: deliberately letting a slower person take a new technology first, and paying the short-term speed loss on purpose. This is the intervention the simulation suggests should work, and it is not what most organisations mean by "training".</p>
+    </div>
+
+    <div class="attr">
+      <div class="attr-head"><h3>5. Low switching costs, and no status penalty for not knowing</h3><span class="tag tag-lit">literature</span></div>
+      <p>Resistance to new systems is driven principally by switching costs and by perceived threat to one's standing and competence (Kim &amp; Kankanhalli, 2009). Where admitting unfamiliarity is expensive, adoption stalls regardless of budget — and the people who most need to pass the gate are the ones with most to lose by visibly starting as beginners.</p>
+    </div>
+
+    <div class="attr">
+      <div class="attr-head"><h3>6. Codification lowers the cost of passing the gate</h3><span class="tag tag-judge">judgement</span></div>
+      <p>Not in the model. Converting tacit ownership into written, runnable, testable form should reduce what it costs a second person to reach independent operation. If true, well-codified organisations should show materially shorter handoff latency at the same bus factor — which is a testable prediction rather than an assertion, and one worth checking before investing in documentation as a substitute for practice.</p>
+    </div>
+
+    <div class="attr">
+      <div class="attr-head"><h3>7. Hiring as a substitute for internal capability-building</h3><span class="tag tag-model">from the model</span></div>
+      <p>People arrive already fluent in current external practice, which refreshes the frontier without spending frontier time. But it has a specific failure mode: new hires know the <em>industry's</em> current technology, not <em>your</em> systems, so hiring refreshes tier 1 while doing nothing for coverage of your own legacy. An organisation that meets every capability gap by hiring will find its bus-factor-one list growing regardless.</p>
+    </div>
+
+    <div class="attr">
+      <div class="attr-head"><h3>8. Coupling — whether people watch each other</h3><span class="tag tag-model">from the model</span><span class="tag tag-lit">literature</span></div>
+      <p>In the simulation, capability investment paid noticeably more in tightly-coupled organisations, where people adopt partly because peers did (the imitation term in Bass's diffusion model, 1969), and paid least where everyone decided alone. Communities of practice are therefore a multiplier on any other investment here rather than an alternative to them.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>What to collect</h2>
+    <p>None of this requires measuring "skill", which is fortunate, because skill is hard to measure and easy to argue about. Every construct below has a concrete operational proxy that most organisations already emit as exhaust.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>What you're measuring</th><th>Where it already exists</th><th>The decision it informs</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Independent operators per technology</td>
+            <td>On-call rota history; commit and review authorship; deployment logs; who resolved the ticket, not who was assigned it</td>
+            <td>The bus-factor-one list. This is the core dataset — everything else is supporting.</td>
+          </tr>
+          <tr>
+            <td>Frontier support load</td>
+            <td>Pages and interrupts per senior person; ticket assignment; calendar fragmentation</td>
+            <td>Whether handoff is even your constraint. If seniors already spend little on support, none of this matters.</td>
+          </tr>
+          <tr>
+            <td>Handoff latency</td>
+            <td>Time from a technology's introduction to the first incident resolved by someone other than whoever introduced it</td>
+            <td>Whether the gate is passable in practice, and how long passing it takes.</td>
+          </tr>
+          <tr>
+            <td>Second-tier utilisation</td>
+            <td>Work-in-progress counts, queue lengths, cycle times</td>
+            <td>Whether slack — not capability — is what's blocking handoff.</td>
+          </tr>
+          <tr>
+            <td>Adoption timing per person per technology</td>
+            <td>First independent use, from the same sources as coverage</td>
+            <td>Your internal diffusion curve; lets you estimate how much people follow peers versus decide alone.</td>
+          </tr>
+          <tr>
+            <td>Time to independence</td>
+            <td>Onboarding date to first unsupervised contribution on a given technology</td>
+            <td>Your switching cost in real units — the thing training is supposed to reduce.</td>
+          </tr>
+          <tr>
+            <td>What actually caps delivery</td>
+            <td>Whether delivery times track your slowest contributor or your fastest</td>
+            <td>Your production function. This governs the sign of the whole answer and cannot be assumed.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Turning that into a policy</h2>
+    <ol>
+      <li><strong>Rank technologies by frontier time consumed &times; inverse bus factor.</strong> Things that are both single-owner and expensive in senior attention are your bottleneck list, and it will be shorter than you expect.</li>
+      <li><strong>For each, pick the cheapest route to a second independent operator</strong> — rotating the next piece of work on it, pairing through a real change, codifying enough that someone else can run it, or hiring for it. These have very different costs and the answer differs per technology.</li>
+      <li><strong>Check second-tier slack before starting.</strong> If utilisation is already at capacity, creating capability will not produce handoff, and you will conclude — wrongly — that capability-building doesn't work.</li>
+      <li><strong>Establish your production function before arguing about budget</strong>, because it determines whether bringing up the tail shows in output at all.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>How you would know this is wrong</h2>
+    <p>Stated as checks rather than claims, because a toy model earns very little deference:</p>
+    <ul>
+      <li><strong>The gate itself:</strong> do people who were trained on a technology but never independently operated it absorb handoffs as readily as people who did operate it? If yes, the capability gate is wrong and conventional training should work fine.</li>
+      <li><strong>Relevance:</strong> if your senior people already spend little time on support for things they introduced, handoff is not your constraint and this entire framing is beside the point.</li>
+      <li><strong>Codification as substitute:</strong> if handoff latency is short despite bus factor one, something — most likely codification — is substituting for practice, and attribute 2 is overstated.</li>
+      <li><strong>Aggregation:</strong> if delivery tracks your fastest contributors, improvements to the tail will not appear in output no matter how real they are.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>What this cannot tell you</h2>
+    <div class="callout warn">
+      <div class="callout-title">Do not read this as evidence against training</div>
+      <p>The simulation showed that the training effect was <em>not robust</em>, which is a different and much weaker statement than showing training doesn't work. A toy model failing to detect an effect is poor evidence that the effect is absent — particularly here, where the training mechanism was the crudest thing in the model. The defensible claim is narrow: <strong>handoff capability is worth measuring and investing in first, because its effect was large and survived scrutiny that the training effect did not.</strong></p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Three further limits</div>
+      <p>The production function is an input to this analysis, not an output of it — the model will happily tell you whatever your assumption implies. The simulated organisation's laggard tail is thin, so weakest-link conclusions were the noisiest and least trustworthy. And every attribute above tagged <em>judgement</em> is reasoning by analogy from a simplified model to real organisations, which is exactly the step where this sort of work usually goes wrong.</p>
+    </div>
+  </section>
+
+  <section class="refs">
+    <h2>Sources</h2>
+    <p>Cohen, W. M. &amp; Levinthal, D. A. (1990). Absorptive Capacity: A New Perspective on Learning and Innovation. <em>Administrative Science Quarterly</em>, 35(1), 128–152.</p>
+    <p>Kim, H.-W. &amp; Kankanhalli, A. (2009). Investigating User Resistance to Information Systems Implementation: A Status Quo Bias Perspective. <em>MIS Quarterly</em>, 33(3), 567–582.</p>
+    <p>Kremer, M. (1993). The O-Ring Theory of Economic Development. <em>Quarterly Journal of Economics</em>, 108(3). — the weakest-link production function.</p>
+    <p>Bass, F. M. (1969). A New Product Growth Model for Consumer Durables. <em>Management Science</em>, 15(5). — the innovation and imitation terms.</p>
+    <p>Rogers, E. M. (1962). <em>Diffusion of Innovations</em>. — adopter categories.</p>
+    <p>Hirshleifer, J. — the weakest-link / best-shot / summation taxonomy of aggregation.</p>
+  </section>
+
+  <footer>Companion to the Surprise Circumplex, Innovator's Wake and Second Tier simulations, and to "Psychology of Novelty &amp; Habit Disruption" in <i>When Machines Changed the Job</i>.</footer>
+
+</div>
+</body>
+</html>

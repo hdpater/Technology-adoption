@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surprise Circumplex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@600;700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    color-scheme: dark;
+    --void:      #0A0D12;
+    --panel:     #12171F;
+    --panel-2:   #161C25;
+    --grid:      #232B36;
+    --grid-soft: #1A212B;
+    --ink:       #ECE7DA;
+    --ink-2:     #8B94A0;
+    --ink-3:     #5B6672;
+    --signal:    #5FA8E0;
+    --signal-dim: #3D6E92;
+    --neg:       #E0563A;
+    --pos:       #1FA588;
+    --neu:       #5B6672;
+    --border:    rgba(236,231,218,0.09);
+    --font-display: "Big Shoulders", system-ui, sans-serif;
+    --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    background: var(--void);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.5;
+  }
+  .console{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px 24px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+
+  /* ---- nameplate ---- */
+  .nameplate{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--signal);
+    text-transform: uppercase;
+  }
+  h1{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(34px, 5vw, 52px);
+    letter-spacing: 0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .dek{
+    max-width: 62ch;
+    color: var(--ink-2);
+    font-size: 15px;
+  }
+
+  /* ---- display row ---- */
+  .display-row{
+    display: grid;
+    grid-template-columns: 1.65fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 880px){
+    .display-row{ grid-template-columns: 1fr; }
+  }
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px;
+  }
+  .card-title{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin: 0 0 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  /* scope */
+  .scope-frame{
+    position: relative;
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    grid-template-rows: 1fr 22px;
+    gap: 6px;
+  }
+  .axis-y-label{
+    grid-row: 1;
+    grid-column: 1;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .axis-x-label{
+    grid-row: 2;
+    grid-column: 2;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .scope-canvas-wrap{
+    grid-row: 1;
+    grid-column: 2;
+    position: relative;
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+    background: var(--void);
+    aspect-ratio: 1.35 / 1;
+  }
+  canvas#scope{
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .quad-label{
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    pointer-events: none;
+    line-height: 1.35;
+  }
+  .quad-tl{ top: 8px; left: 10px; }
+  .quad-tr{ top: 8px; right: 10px; text-align: right; }
+  .quad-bl{ bottom: 8px; left: 10px; }
+  .quad-br{ bottom: 8px; right: 10px; text-align: right; }
+  .tooltip{
+    position: absolute;
+    pointer-events: none;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 9px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink);
+    white-space: nowrap;
+    transform: translate(-50%, -120%);
+    opacity: 0;
+    transition: opacity 0.08s ease;
+    z-index: 5;
+  }
+  .tooltip .tt-tag{ color: var(--ink-2); }
+
+  /* transport */
+  .transport{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .day-readout{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    margin-right: auto;
+  }
+  .day-readout b{
+    font-size: 15px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  button{
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  button:hover{ border-color: var(--signal-dim); }
+  button:focus-visible{ outline: 2px solid var(--signal); outline-offset: 2px; }
+  button.primary{
+    background: var(--signal);
+    color: #071522;
+    border-color: var(--signal);
+  }
+  button.primary:hover{ background: #78b7e8; }
+
+  /* telemetry */
+  .telemetry-panel{ display: flex; flex-direction: column; gap: 14px; }
+  .quad-stats{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-tile{
+    background: var(--panel-2);
+    border-radius: 4px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--neu);
+  }
+  .stat-tile.neg{ border-left-color: var(--neg); }
+  .stat-tile.pos{ border-left-color: var(--pos); }
+  .stat-label{
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .stat-value{
+    font-family: var(--font-mono);
+    font-size: 22px;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .spark-block{ margin-top: 2px; }
+  .spark-title{
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .spark-title .val{ color: var(--ink); }
+  svg.spark{ width: 100%; height: 58px; display: block; overflow: visible; }
+
+  /* controls */
+  .controls-row{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 720px){
+    .controls-row{ grid-template-columns: 1fr; }
+  }
+  .field{ margin-bottom: 14px; }
+  .field:last-child{ margin-bottom: 0; }
+  .field-label{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .field-label .fname{ color: var(--ink); }
+  .field-label .fval{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--signal);
+    font-variant-numeric: tabular-nums;
+  }
+  .field-note{
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-top: 3px;
+  }
+  input[type="range"]{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    background: var(--grid);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--signal);
+    border: 2px solid var(--void);
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--signal);
+    border: 2px solid var(--void);
+    cursor: pointer;
+  }
+  .trigger-btn{ width: 100%; margin-top: 4px; padding: 10px; }
+
+  /* model note + footer */
+  .model-note{
+    font-size: 13.5px;
+    color: var(--ink-2);
+  }
+  .model-note b{ color: var(--ink); font-weight: 600; }
+  footer{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    button, .tooltip{ transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="console">
+  <a href="when-machines-changed-the-job.html" style='font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);text-decoration:none;display:inline-block;margin-bottom:18px;'>&larr; Back to the paper</a>
+
+  <header class="nameplate">
+    <div class="eyebrow">Agent simulation · companion instrument</div>
+    <h1>Surprise Circumplex</h1>
+    <p class="dek">What happens, day by day, when a habit gets interrupted — an OS update, a redesigned menu, a moved button. Every dot below is one person. Position is their arousal and valence the moment after the change: not everyone reacts alike, and that mixture is the whole point.</p>
+  </header>
+
+  <div class="display-row">
+    <div class="card">
+      <p class="card-title">
+        <span>Population — arousal × valence</span>
+        <span id="nCount">160 agents</span>
+      </p>
+      <div class="scope-frame">
+        <div class="axis-y-label">Arousal — calm ↔ activated</div>
+        <div class="scope-canvas-wrap" id="scopeWrap">
+          <canvas id="scope"></canvas>
+          <div class="quad-label quad-tl">Tense<br>Distressed</div>
+          <div class="quad-label quad-tr">Excited<br>Elated</div>
+          <div class="quad-label quad-bl">Bored<br>Depressed</div>
+          <div class="quad-label quad-br">Content<br>Relaxed</div>
+          <div class="tooltip" id="tooltip"></div>
+        </div>
+        <div class="axis-x-label">Valence — unpleasant ← appraisal → pleasant</div>
+      </div>
+      <div class="transport">
+        <div class="day-readout">DAY <b id="dayNum">000</b> SINCE ROLLOUT</div>
+        <button id="playBtn">▶ Play</button>
+        <button id="stepBtn">Step +1 day</button>
+      </div>
+    </div>
+
+    <div class="card telemetry-panel">
+      <p class="card-title"><span>Quadrant census</span><span>% of population</span></p>
+      <div class="quad-stats">
+        <div class="stat-tile neg"><div class="stat-label">Distressed</div><div class="stat-value" id="pctDistressed">0%</div></div>
+        <div class="stat-tile pos"><div class="stat-label">Excited</div><div class="stat-value" id="pctExcited">0%</div></div>
+        <div class="stat-tile neg"><div class="stat-label">Bored</div><div class="stat-value" id="pctBored">0%</div></div>
+        <div class="stat-tile pos"><div class="stat-label">Content</div><div class="stat-value" id="pctContent">0%</div></div>
+      </div>
+
+      <div class="spark-block">
+        <div class="spark-title"><span>Mean arousal</span><span class="val" id="sparkArousalVal">0.00</span></div>
+        <svg class="spark" id="sparkArousal" viewBox="0 0 260 58" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="spark-block">
+        <div class="spark-title"><span>Mean valence</span><span class="val" id="sparkValenceVal">0.00</span></div>
+        <svg class="spark" id="sparkValence" viewBox="0 0 260 58" preserveAspectRatio="none"></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls-row">
+    <div class="card">
+      <p class="card-title"><span>The event</span><span>applies at next rollout</span></p>
+
+      <div class="field">
+        <div class="field-label"><span class="fname">Disruption size</span><span class="fval" id="vMagnitude">0.65</span></div>
+        <input type="range" id="magnitude" min="10" max="100" value="65">
+        <div class="field-note">How much of the old workflow the change actually touches.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span class="fname">Average fit</span><span class="fval" id="vQuality">-0.15</span></div>
+        <input type="range" id="quality" min="-100" max="100" value="-15">
+        <div class="field-note">Is the new normal, on balance, good for people or bad for them?</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span class="fname">Polarization</span><span class="fval" id="vPolarization">0.40</span></div>
+        <input type="range" id="polarization" min="5" max="90" value="40">
+        <div class="field-note">How split opinion is — power users losing a feature vs. newcomers gaining simplicity.</div>
+      </div>
+
+      <button class="trigger-btn primary" id="triggerBtn">Trigger rollout</button>
+    </div>
+
+    <div class="card">
+      <p class="card-title"><span>Population traits</span><span>live</span></p>
+
+      <div class="field">
+        <div class="field-label"><span class="fname">Habit strength</span><span class="fval" id="vHabit">0.70</span></div>
+        <input type="range" id="habitStrength" min="20" max="100" value="70">
+        <div class="field-note">How automatized the old workflow was — sets the jolt at rollout.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span class="fname">Loss aversion (λ)</span><span class="fval" id="vLoss">2.25</span></div>
+        <input type="range" id="lossAversion" min="100" max="300" value="225">
+        <div class="field-note">Kahneman &amp; Tversky's estimate: bad news lands ~2.25× harder than equal good news.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span class="fname">Habituation speed</span><span class="fval" id="vHabituation">0.55</span></div>
+        <input type="range" id="habituation" min="0" max="100" value="55">
+        <div class="field-note">How fast arousal fades as the disruption stops being news.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span class="fname">Mere-exposure drift</span><span class="fval" id="vExposure">0.015</span></div>
+        <input type="range" id="exposureDrift" min="0" max="50" value="15">
+        <div class="field-note">How fast appraisal settles toward the change's real fit (plus a small liking bonus) as the shock cools — Zajonc, 1968.</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><span class="fname">Discovery rate</span><span class="fval" id="vDiscovery">0.010</span></div>
+        <input type="range" id="discoveryRate" min="0" max="80" value="10">
+        <div class="field-note">Daily chance that continued use surfaces something new, good or bad. A calmed-down agent can spike again — arousal isn't one-and-done.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card model-note">
+    <p class="card-title"><span>The model, in brief</span><span></span></p>
+    <p>Each dot carries a <b>habit strength</b> and a true, personal <b>fit</b> with the new normal. A rollout jolts arousal by habit strength × disruption size — Shiffrin &amp; Schneider's automaticity (1977): the more a workflow ran on autopilot, the harder the jolt when it's interrupted. The initial appraisal amplifies a bad fit by the loss-aversion multiplier — Mandler's split (1975): arousal and valence are computed independently, so the same interruption lands as elation for one person and distress for another. As arousal cools, that hot-state amplification fades too: appraisal relaxes toward the change's <i>real</i> fit, plus a small, fixed liking bonus from familiarity (Zajonc's mere-exposure effect) — enough to soften a mediocre change, not enough to rescue a genuinely bad one. So the population's end state depends on whether the change was actually good: <i>Content</i> if so, a lasting pocket of <i>Bored</i> or <i>Distressed</i> if not. Arousal isn't strictly one-and-done, either: each day, continued use has a small chance of surfacing something new — a hidden bug, an unexpected win. Mandler's arousal responds to <i>any</i> fresh discrepancy, not just the original rollout, so a calmed-down agent can spike back up well after the fact.</p>
+  </div>
+
+  <footer>A simplified illustrative model, not a validated psychological instrument — built to accompany "Psychology of Novelty &amp; Habit Disruption" in <i>When Machines Changed the Job</i>.</footer>
+
+</div>
+
+<script>
+(function(){
+  var N = 160;
+  var agents = [];
+  var day = 0;
+  var history = { arousal: [], valence: [] };
+  var playing = false;
+  var timer = null;
+
+  var els = {
+    magnitude: document.getElementById('magnitude'),
+    quality: document.getElementById('quality'),
+    polarization: document.getElementById('polarization'),
+    habitStrength: document.getElementById('habitStrength'),
+    lossAversion: document.getElementById('lossAversion'),
+    habituation: document.getElementById('habituation'),
+    exposureDrift: document.getElementById('exposureDrift'),
+    discoveryRate: document.getElementById('discoveryRate'),
+  };
+  var vEls = {
+    magnitude: document.getElementById('vMagnitude'),
+    quality: document.getElementById('vQuality'),
+    polarization: document.getElementById('vPolarization'),
+    habitStrength: document.getElementById('vHabit'),
+    lossAversion: document.getElementById('vLoss'),
+    habituation: document.getElementById('vHabituation'),
+    exposureDrift: document.getElementById('vExposure'),
+    discoveryRate: document.getElementById('vDiscovery'),
+  };
+
+  function readParams(){
+    return {
+      magnitude: (+els.magnitude.value) / 100,
+      quality: (+els.quality.value) / 100,
+      polarization: (+els.polarization.value) / 100,
+      habitStrength: (+els.habitStrength.value) / 100,
+      lossAversion: (+els.lossAversion.value) / 100,
+      habituation: (+els.habituation.value) / 100,
+      exposureDrift: (+els.exposureDrift.value) / 1000,
+      discoveryRate: (+els.discoveryRate.value) / 1000,
+    };
+  }
+
+  function refreshReadouts(){
+    var p = readParams();
+    vEls.magnitude.textContent = p.magnitude.toFixed(2);
+    vEls.quality.textContent = (p.quality >= 0 ? '+' : '') + p.quality.toFixed(2);
+    vEls.polarization.textContent = p.polarization.toFixed(2);
+    vEls.habitStrength.textContent = p.habitStrength.toFixed(2);
+    vEls.lossAversion.textContent = p.lossAversion.toFixed(2);
+    vEls.habituation.textContent = p.habituation.toFixed(2);
+    vEls.exposureDrift.textContent = p.exposureDrift.toFixed(3);
+    vEls.discoveryRate.textContent = p.discoveryRate.toFixed(3);
+  }
+  Object.keys(els).forEach(function(k){ els[k].addEventListener('input', refreshReadouts); });
+  refreshReadouts();
+
+  function gaussian(){
+    var u = 1 - Math.random(), v = Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  function clamp(x, a, b){ return Math.max(a, Math.min(b, x)); }
+  function habitDecay(h){ return 0.97 - h * 0.22; } // h in [0,1] -> decay in [0.75,0.97]
+  var EXPOSURE_BONUS = 0.2; // familiarity can nudge liking up a bit; it can't rescue a bad rollout
+  var DISCOVERY_IMPACT_STD = 0.35; // spread of a "found something new" jolt to true fit
+  var REDISCOVERY_GAIN = 1.2; // how much a jolt's felt magnitude re-arouses (Mandler: any fresh discrepancy)
+
+  function fireEvent(){
+    var p = readParams();
+    agents = [];
+    for (var i = 0; i < N; i++){
+      var w0 = clamp(p.habitStrength + (Math.random() - 0.5) * 0.3, 0.05, 1);
+      var q = clamp(p.quality + gaussian() * p.polarization, -1, 1); // true, unamplified fit
+      var f0 = q < 0 ? clamp(q * p.lossAversion, -1, 1) : q; // hot-state appraisal, loss-aversion amplified
+      agents.push({ w: w0 * p.magnitude, f: f0, q: q });
+    }
+    day = 0;
+    history.arousal = [];
+    history.valence = [];
+    recordHistory();
+    render();
+  }
+
+  function tick(){
+    var p = readParams();
+    var decay = habitDecay(p.habituation);
+    for (var i = 0; i < agents.length; i++){
+      var a = agents[i];
+      a.w = a.w * decay;
+      // as arousal cools, appraisal settles toward the change's real fit (plus a small
+      // familiarity bonus) rather than toward universal liking -- loss aversion was a
+      // hot-state effect on the initial shock, not a permanent multiplier
+      var target = clamp(a.q + EXPOSURE_BONUS, -1, 1);
+      a.f = clamp(a.f + p.exposureDrift * (target - a.f), -1, 1);
+
+      if (Math.random() < p.discoveryRate){
+        var delta = gaussian() * DISCOVERY_IMPACT_STD;
+        var feltDelta = delta < 0 ? delta * p.lossAversion : delta;
+        a.q = clamp(a.q + delta, -1, 1);
+        a.f = clamp(a.f + feltDelta, -1, 1);
+        a.w = clamp(a.w + Math.abs(feltDelta) * REDISCOVERY_GAIN, 0, 1);
+      }
+    }
+    day += 1;
+    recordHistory();
+    render();
+  }
+
+  function recordHistory(){
+    var sw = 0, sf = 0;
+    for (var i = 0; i < agents.length; i++){ sw += agents[i].w; sf += agents[i].f; }
+    var mw = sw / agents.length, mf = sf / agents.length;
+    history.arousal.push(mw);
+    history.valence.push(mf);
+    if (history.arousal.length > 90){ history.arousal.shift(); history.valence.shift(); }
+    return { mw: mw, mf: mf };
+  }
+
+  // ---- canvas scope ----
+  var wrap = document.getElementById('scopeWrap');
+  var canvas = document.getElementById('scope');
+  var ctx = canvas.getContext('2d');
+  var tooltip = document.getElementById('tooltip');
+  var dpr = Math.max(1, window.devicePixelRatio || 1);
+  var PAD = 26;
+
+  function fitCanvas(){
+    var r = wrap.getBoundingClientRect();
+    canvas.width = Math.round(r.width * dpr);
+    canvas.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    render();
+  }
+
+  function plotRect(){
+    var r = wrap.getBoundingClientRect();
+    return { x: PAD, y: PAD, w: r.width - PAD * 2, h: r.height - PAD * 2, cw: r.width, ch: r.height };
+  }
+  function toXY(f, w, rect){
+    return {
+      x: rect.x + ((f + 1) / 2) * rect.w,
+      y: rect.y + (1 - w) * rect.h
+    };
+  }
+  function lerp(a, b, t){ return a + (b - a) * t; }
+  function mixColor(c1, c2, t){
+    return [ Math.round(lerp(c1[0], c2[0], t)), Math.round(lerp(c1[1], c2[1], t)), Math.round(lerp(c1[2], c2[2], t)) ];
+  }
+  var NEG = [224, 86, 58], POS = [31, 165, 136], NEU = [91, 102, 114];
+  function valenceColor(f){
+    var t = clamp(Math.abs(f), 0, 1);
+    var c = f < 0 ? mixColor(NEU, NEG, t) : mixColor(NEU, POS, t);
+    return 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+  }
+
+  function render(){
+    var rect = plotRect();
+    ctx.clearRect(0, 0, rect.cw, rect.ch);
+
+    // gridlines
+    ctx.strokeStyle = '#1A212B';
+    ctx.lineWidth = 1;
+    for (var gx = 0; gx <= 4; gx++){
+      var x = rect.x + (gx / 4) * rect.w;
+      ctx.beginPath(); ctx.moveTo(x, rect.y); ctx.lineTo(x, rect.y + rect.h); ctx.stroke();
+    }
+    for (var gy = 0; gy <= 4; gy++){
+      var y = rect.y + (gy / 4) * rect.h;
+      ctx.beginPath(); ctx.moveTo(rect.x, y); ctx.lineTo(rect.x + rect.w, y); ctx.stroke();
+    }
+    // center valence=0 axis, brighter
+    ctx.strokeStyle = '#2B3544';
+    ctx.beginPath();
+    var midx = rect.x + rect.w / 2;
+    ctx.moveTo(midx, rect.y); ctx.lineTo(midx, rect.y + rect.h); ctx.stroke();
+
+    // tick labels
+    ctx.fillStyle = '#5B6672';
+    ctx.font = '9.5px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('−1', rect.x, rect.y + rect.h + 14);
+    ctx.fillText('0', midx, rect.y + rect.h + 14);
+    ctx.fillText('+1', rect.x + rect.w, rect.y + rect.h + 14);
+    ctx.textAlign = 'right';
+    ctx.fillText('1.0', rect.x - 6, rect.y + 4);
+    ctx.fillText('0.0', rect.x - 6, rect.y + rect.h);
+
+    // agents
+    var counts = { d: 0, e: 0, b: 0, c: 0 };
+    for (var i = 0; i < agents.length; i++){
+      var a = agents[i];
+      var p = toXY(a.f, a.w, rect);
+      ctx.beginPath();
+      ctx.fillStyle = valenceColor(a.f);
+      ctx.shadowColor = valenceColor(a.f);
+      ctx.shadowBlur = 5;
+      ctx.arc(p.x, p.y, 4.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      var highArousal = a.w >= 0.5;
+      if (a.f < 0 && highArousal) counts.d++;
+      else if (a.f >= 0 && highArousal) counts.e++;
+      else if (a.f < 0 && !highArousal) counts.b++;
+      else counts.c++;
+    }
+    ctx.shadowBlur = 0;
+
+    var total = agents.length || 1;
+    document.getElementById('pctDistressed').textContent = Math.round(100 * counts.d / total) + '%';
+    document.getElementById('pctExcited').textContent = Math.round(100 * counts.e / total) + '%';
+    document.getElementById('pctBored').textContent = Math.round(100 * counts.b / total) + '%';
+    document.getElementById('pctContent').textContent = Math.round(100 * counts.c / total) + '%';
+    document.getElementById('dayNum').textContent = String(day).padStart(3, '0');
+
+    drawSparks();
+    lastRect = rect;
+  }
+
+  var lastRect = null;
+  canvas.addEventListener('mousemove', function(e){
+    if (!lastRect || !agents.length) return;
+    var r = canvas.getBoundingClientRect();
+    var mx = e.clientX - r.left, my = e.clientY - r.top;
+    var best = -1, bestD = 14;
+    for (var i = 0; i < agents.length; i++){
+      var p = toXY(agents[i].f, agents[i].w, lastRect);
+      var d = Math.hypot(p.x - mx, p.y - my);
+      if (d < bestD){ bestD = d; best = i; }
+    }
+    if (best === -1){ tooltip.style.opacity = 0; return; }
+    var a = agents[best];
+    var p = toXY(a.f, a.w, lastRect);
+    var tag = a.w >= 0.5 ? (a.f < 0 ? 'Distressed' : 'Excited') : (a.f < 0 ? 'Bored' : 'Content');
+    tooltip.innerHTML = '<span class="tt-tag">' + tag + '</span> · arousal ' + a.w.toFixed(2) + ' · valence ' + (a.f >= 0 ? '+' : '') + a.f.toFixed(2);
+    tooltip.style.left = p.x + 'px';
+    tooltip.style.top = p.y + 'px';
+    tooltip.style.opacity = 1;
+  });
+  canvas.addEventListener('mouseleave', function(){ tooltip.style.opacity = 0; });
+
+  function buildSparkPath(data, domainMin, domainMax){
+    if (data.length < 2) return { path: '', last: { x: 0, y: 29 } };
+    var w = 260, h = 58, padY = 8;
+    var pts = data.map(function(v, i){
+      var x = (i / (data.length - 1)) * w;
+      var t = (v - domainMin) / (domainMax - domainMin);
+      var y = h - padY - clamp(t, 0, 1) * (h - padY * 2);
+      return [x, y];
+    });
+    var d = 'M ' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(1);
+    for (var i = 1; i < pts.length; i++) d += ' L ' + pts[i][0].toFixed(1) + ' ' + pts[i][1].toFixed(1);
+    return { path: d, last: { x: pts[pts.length - 1][0], y: pts[pts.length - 1][1] } };
+  }
+
+  function drawSparks(){
+    var aData = history.arousal, vData = history.valence;
+    var aRes = buildSparkPath(aData, 0, 1);
+    var vRes = buildSparkPath(vData, -1, 1);
+
+    var aSvg = document.getElementById('sparkArousal');
+    var vSvg = document.getElementById('sparkValence');
+    var aVal = aData.length ? aData[aData.length - 1] : 0;
+    var vVal = vData.length ? vData[vData.length - 1] : 0;
+    document.getElementById('sparkArousalVal').textContent = aVal.toFixed(2);
+    document.getElementById('sparkValenceVal').textContent = (vVal >= 0 ? '+' : '') + vVal.toFixed(2);
+
+    var zeroLineV = 58 - 8 - clamp((0 - (-1)) / 2, 0, 1) * (58 - 16);
+
+    aSvg.innerHTML =
+      '<line x1="0" y1="50" x2="260" y2="50" stroke="#1A212B" stroke-width="1"/>' +
+      '<path d="' + aRes.path + '" fill="none" stroke="#5FA8E0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="' + aRes.last.x.toFixed(1) + '" cy="' + aRes.last.y.toFixed(1) + '" r="2.6" fill="#5FA8E0"/>';
+
+    vSvg.innerHTML =
+      '<line x1="0" y1="' + zeroLineV.toFixed(1) + '" x2="260" y2="' + zeroLineV.toFixed(1) + '" stroke="#2B3544" stroke-width="1" stroke-dasharray="2,3"/>' +
+      '<path d="' + vRes.path + '" fill="none" stroke="#5FA8E0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="' + vRes.last.x.toFixed(1) + '" cy="' + vRes.last.y.toFixed(1) + '" r="2.6" fill="#5FA8E0"/>';
+  }
+
+  // ---- transport ----
+  var playBtn = document.getElementById('playBtn');
+  function setPlaying(on){
+    playing = on;
+    playBtn.textContent = playing ? '⏸ Pause' : '▶ Play';
+    if (timer){ clearInterval(timer); timer = null; }
+    if (playing){ timer = setInterval(tick, 450); }
+  }
+  playBtn.addEventListener('click', function(){ setPlaying(!playing); });
+  document.getElementById('stepBtn').addEventListener('click', function(){ setPlaying(false); tick(); });
+  document.getElementById('triggerBtn').addEventListener('click', function(){ setPlaying(false); fireEvent(); });
+
+  window.addEventListener('resize', fitCanvas);
+
+  fireEvent();
+  fitCanvas();
+})();
+</script>
+</body>
+</html>
