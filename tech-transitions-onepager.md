@@ -210,6 +210,23 @@ A common objection to worrying about a new transition: technology improvements a
 
 ---
 
+## Psychology of Novelty & Habit Disruption (Why Software Updates Split Opinion)
+
+Software and interface rollouts are a live, present-day instance of the same pattern — and here the underlying psychological mechanisms are studied directly, separate from the historical press record above.
+
+- **Automaticity (Shiffrin & Schneider, *Psychological Review*, 1977).** Well-practiced tasks get compiled into fast, low-effort "automatic" processing; anything novel runs through slow, effortful "controlled" processing. Redesigning an interface forces users who had automatized their workflow back into controlled processing — inherently effortful, regardless of whether the new design is actually better.
+- **Interruption theory of emotion (Mandler, *Mind and Emotion*, 1975).** Interrupting an automatized plan produces physiological arousal that is itself emotionally neutral; the subsequent cognitive appraisal determines whether it's experienced as excitement, curiosity, irritation, or anxiety. This is the most direct account of why the same rollout produces a genuine *mix* of reactions rather than one uniform mood.
+- **Status quo bias in IT rollouts (Kim & Kankanhalli, *MIS Quarterly*, 2009).** A study built around exactly this scenario found user resistance to new systems driven mainly by switching costs (the effort of relearning) and perceived threat to one's existing competence or influence — more than by the new system's actual merits.
+- **Feature fatigue (Thompson, Hamilton & Rust, *Journal of Marketing Research*, 2005).** People systematically overweight capability and underweight usability before using a product, then flip that weighting after — explaining why a feature-loaded update tests well in previews but draws complaints once people live with it.
+- **Mere exposure effect (Zajonc, 1968).** Repeated exposure to a stimulus increases liking independent of reasoned evaluation — the standard explanation for why initial hostility to a redesign fades within weeks or months.
+- **Real case:** Windows 8's removal of the Start button (2012) drew enough backlash that Microsoft restored it in Windows 8.1 within about a year — a company observing this exact mixture of reactions in real time.
+
+*Caveat: the popular "change curve" (denial → frustration → ... → acceptance) that change-management consultants apply to software rollouts is adapted by analogy from grief-stage models, not an independently validated stage theory of technology adoption — useful as a rough narrative, not as established science.*
+
+**A modeling idea worth flagging:** Mandler's split — arousal from interruption, valence from appraisal — combined with status-quo-anchored expectations, is naturally suited to formal agent modeling. A BDI (belief-desire-intention) agent holding an anchored *expectation* of the future could treat an unexpected event as first producing "arousal" proportional to the size of the belief update, then a valence sign determined by whether the event moved the agent's desires closer to or further from being satisfied — which would let a simulation reproduce genuinely mixed populations of reactions (some agents made more optimistic, some more anxious) from the same external event, rather than assuming everyone reacts identically to "change."
+
+---
+
 ## What Repeats Every Time
 
 | Pattern | What it means for us |
@@ -223,3 +240,76 @@ A common objection to worrying about a new transition: technology improvements a
 | Technical feasibility and social trust can be decades apart | Budget deliberate trust-building time (visible safeguards, gradual exposure) — not just deployment time |
 | Fear attaches to concrete, everyday disruptions, not to a technology's abstract novelty | Address specific, tangible worries directly rather than arguing about the technology in the abstract |
 | Press/public opinion often swings more than once — skepticism, then euphoria, then a delayed backlash — rather than settling permanently | Expect and plan for a possible second wave of scrutiny even after initial acceptance looks secure |
+
+---
+
+# Part II — From History to Policy
+
+The case studies above describe what happened to other people. This part asks the operational question they raise for us: **if a transition is coming, is it worth spending resources to bring the stragglers along?** Three agent-based simulations were built to probe that. They are illustrative toys, not validated models of organisations, and the honest results include one substantial failure — which is reported here because it changes what the rest is worth.
+
+## The three instruments
+
+| Simulation | Question it probes | What it showed |
+|---|---|---|
+| **Surprise Circumplex** | What one person feels when a habit is interrupted | Arousal and valence are computed independently (Mandler, 1975), so a single change scatters a population across all four emotional quadrants rather than moving everyone the same way. Loss aversion is a hot-state effect that cools as arousal fades. |
+| **The Innovator's Wake** | How adoption spreads across a population over time | A frontier is sustained by *succession*, not distance: careers deplete, and replacing retirees at the cutting edge is what keeps a leading edge leading. Separation between adopters and laggards is not self-sustaining without it. |
+| **The Second Tier** | Whether training the laggards is a good use of resources | Being *able to hand work down* was worth ~30% of output. Training budget was worth approximately nothing. |
+
+## The one robust finding
+
+In the third simulation, three organisations ran on an identical stream of ideas, differing only in policy. The ability to hand support work downward was worth **~28–32% of organisational output**, stable across every population size and integration step tested. Without it, senior staff retained only ~25% of their effective speed — buried in supporting things they themselves had introduced.
+
+The mechanism is specific and it is the whole argument: **a handoff only succeeds when the receiver has already independently operated that particular technology.** When the model let work pass to anyone standing nearby, the entire effect vanished — because in a working organisation there is always somebody standing nearby. Proximity is free; capability is not.
+
+## The failure, reported deliberately
+
+An intermediate build showed training producing an **+83%** gain. That number was a numerical artifact. Re-running the identical model at different integration timesteps moved the training effect from +58% to −1.4%, flipping sign, while the handoff effect stayed at +28–32% throughout. The published version runs at the finest timestep tested, where training's effect is small and turns negative above roughly 30% of frontier time.
+
+This matters in two directions. It is why the handoff result is quoted with confidence and the training result is not. It is also **not evidence that training doesn't work** — a toy model failing to detect an effect is weak evidence of absence, especially where the training mechanism was the crudest thing in the model.
+
+## The capability gate
+
+The surviving mechanism turns out to have a name. Cohen & Levinthal's **absorptive capacity** (1990) holds that an organisation's ability to take up new knowledge is a function of its *prior related knowledge*, accrued largely as a by-product of doing the work rather than being told about it. You cannot absorb what you have no foundation in.
+
+That reframes the policy question. Not *"how much should we spend on training?"* but:
+
+> **For each technology we depend on, how many people have independently operated it — and what is the cheapest way to make that number two?**
+
+Attributes that appear to produce a capable second tier, tagged by how well-founded each is:
+
+| Attribute | Basis | Why it matters |
+|---|---|---|
+| Coverage per technology, not average skill | model | An organisation of brilliant sole owners has *zero* handoff capacity regardless of headcount or seniority |
+| Capability is earned by doing the work | literature | Briefings and shadowing lower the cost of a later adoption but do not create a receiver |
+| Slack in the second tier | model + queueing theory | Saturated receivers refuse work; running everyone at full utilisation structurally eliminates the ability to shed work downward |
+| Rotation of *new* work, not just old | judgement | If tier 1 always takes the new thing because they're fastest, tier 2 never passes the gate. The real training budget is an assignment policy |
+| Low switching costs, no status penalty for not knowing | literature (Kim & Kankanhalli, 2009) | The people who most need to pass the gate have the most to lose by visibly starting as beginners |
+| Codification | judgement | Should lower the cost of passing the gate — testable, not established |
+| Hiring as substitute | model | Refreshes the frontier without spending frontier time, but new hires know the industry's technology, not *your* legacy |
+| Coupling / communities of practice | model + literature | Capability investment paid most in organisations where people already watch and copy each other |
+
+## What to measure before spending anything
+
+None of this requires measuring "skill" — every construct has a proxy most organisations already emit:
+
+| Construct | Where it already exists | Decision it informs |
+|---|---|---|
+| Independent operators per technology | On-call rotas; commit and review authorship; who *resolved* the ticket, not who was assigned it | The bus-factor-one list — the core dataset |
+| Frontier support load | Pages and interrupts per senior person; calendar fragmentation | Whether handoff is even your constraint |
+| Handoff latency | Time from a technology's introduction to first incident resolved by someone else | Whether the gate is passable in practice |
+| Second-tier utilisation | WIP counts, queue lengths, cycle times | Whether slack, not capability, is the blocker |
+| Time to independence | Onboarding to first unsupervised contribution | Your switching cost in real units |
+| What actually caps delivery | Whether delivery tracks your slowest or fastest contributor | Your production function — this governs the sign of the whole answer |
+
+**The policy loop:** rank technologies by *(frontier time consumed × inverse bus factor)*; for each, pick the cheapest route to a second independent operator (rotation, pairing through a real change, codification, or hiring); check second-tier slack first, or you will create capability, see no handoff, and wrongly conclude capability-building doesn't work.
+
+## How we would know this is wrong
+
+- **The gate itself:** do people trained on a technology but who never independently operated it absorb handoffs as readily as those who did? If yes, the capability gate is wrong and conventional training should work fine.
+- **Relevance:** if senior staff already spend little time supporting what they introduced, handoff is not the constraint and this framing is beside the point.
+- **Codification as substitute:** short handoff latency despite bus factor one would mean codification substitutes for practice.
+- **Aggregation:** if delivery tracks the fastest contributors, improvements to the tail will not appear in output however real they are.
+
+## Standing caveats
+
+The production function (weakest-link / average / best-shot) is an *input* to this analysis, not an output — the model will report whatever your assumption implies, so it must be established empirically rather than assumed. The simulated laggard tail is thin, making weakest-link conclusions the least trustworthy. And every attribute tagged *judgement* is reasoning by analogy from a simplified model to real organisations, which is precisely where this kind of work usually goes wrong.
