@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>When Machines Changed the Job</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:        #F6F3EC;
+    --paper-raised: #FFFFFF;
+    --ink:          #201C16;
+    --ink-2:        #52493C;
+    --ink-3:        #8A7F6C;
+    --accent:       #2A3F7C;
+    --rule:         rgba(32,28,22,0.13);
+    --rule-soft:    rgba(32,28,22,0.07);
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body:    "Source Serif 4", Georgia, "Times New Roman", serif;
+    --font-mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:        #16130E;
+      --paper-raised: #1E1A13;
+      --ink:          #F1ECE1;
+      --ink-2:        #C7BEAC;
+      --ink-3:        #8F8574;
+      --accent:       #8EA3E8;
+      --rule:         rgba(241,236,225,0.16);
+      --rule-soft:    rgba(241,236,225,0.08);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:        #16130E;
+    --paper-raised: #1E1A13;
+    --ink:          #F1ECE1;
+    --ink-2:        #C7BEAC;
+    --ink-3:        #8F8574;
+    --accent:       #8EA3E8;
+    --rule:         rgba(241,236,225,0.16);
+    --rule-soft:    rgba(241,236,225,0.08);
+  }
+  *{ box-sizing: border-box; }
+  body{ background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.6; margin: 0; }
+  .page{ max-width: 760px; margin: 0 auto; padding: 60px 24px 80px; }
+
+  .eyebrow{
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 14px;
+  }
+  h1{
+    font-family: var(--font-display); font-optical-sizing: auto; font-weight: 700;
+    font-size: clamp(34px, 6vw, 52px); line-height: 1.04; letter-spacing: -0.01em;
+    margin: 0 0 16px; text-wrap: balance;
+  }
+  .dek{ font-size: 17.5px; color: var(--ink-2); max-width: 62ch; font-style: italic; margin: 0 0 34px; }
+
+  .primary-card{
+    display: block; background: var(--paper-raised); border: 1px solid var(--rule); border-left: 4px solid var(--accent);
+    border-radius: 4px; padding: 26px 28px; text-decoration: none; color: inherit;
+    margin-bottom: 44px;
+  }
+  .primary-card:hover{ border-left-color: var(--accent); background: var(--paper-raised); box-shadow: 0 1px 0 var(--rule); }
+  .primary-card .kicker{
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .primary-card h2{ font-family: var(--font-display); font-weight: 600; font-size: 25px; margin: 0 0 8px; color: var(--ink); }
+  .primary-card p{ font-size: 15.5px; color: var(--ink-2); margin: 0; max-width: 62ch; }
+  .primary-card .go{ font-family: var(--font-mono); font-size: 12.5px; color: var(--accent); margin-top: 14px; display: inline-block; }
+
+  .section-label{
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-3); padding-bottom: 10px; border-bottom: 1px solid var(--rule); margin-bottom: 20px;
+  }
+
+  .grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 40px; }
+  @media (max-width: 560px){ .grid{ grid-template-columns: 1fr; } }
+
+  .card{
+    display: flex; flex-direction: column; gap: 8px; background: var(--paper-raised); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 20px 22px; text-decoration: none; color: inherit; height: 100%;
+  }
+  .card:hover{ border-color: var(--accent); }
+  .card .num{ font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
+  .card h3{ font-family: var(--font-display); font-weight: 600; font-size: 18px; margin: 0; color: var(--ink); }
+  .card p{ font-size: 14.5px; color: var(--ink-2); margin: 0; flex: 1; }
+  .card .go{ font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); }
+
+  .source-note{ font-size: 14px; color: var(--ink-2); }
+  .source-note a{ color: var(--accent); }
+
+  footer{
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-3);
+    padding-top: 22px; margin-top: 56px; border-top: 1px solid var(--rule);
+  }
+  footer a{ color: var(--ink-3); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="eyebrow">Working paper &amp; companion instruments</div>
+  <h1>When Machines Changed the Job</h1>
+  <p class="dek">Nineteen historical technology transitions, the patterns that repeat across all of them, and what that implies for organisations adopting AI agents now — with four interactive simulations built to test the policy questions it raises.</p>
+
+  <a class="primary-card" href="when-machines-changed-the-job.html">
+    <div class="kicker">Start here</div>
+    <h2>Read the paper</h2>
+    <p>Executive summary, nineteen case studies (1450s–2018), the psychology of why transitions are stressful even when they work out, and a policy framework for deciding whether it's worth bringing stragglers along.</p>
+    <span class="go">Open the paper →</span>
+  </a>
+
+  <div class="section-label">Companion instruments — Appendix A</div>
+  <div class="grid">
+
+    <a class="card" href="surprise-circumplex.html">
+      <div class="num">I</div>
+      <h3>Surprise Circumplex</h3>
+      <p>What one person feels when a habit is interrupted. Arousal and valence are computed independently, so the same event scatters a population across every emotional quadrant rather than moving everyone the same way.</p>
+      <span class="go">Open →</span>
+    </a>
+
+    <a class="card" href="innovators-wake.html">
+      <div class="num">II</div>
+      <h3>The Innovator's Wake</h3>
+      <p>How adoption spreads across a population over time. A leading edge turns out to be sustained by succession, not distance — replacing retirees at the frontier is what keeps it a frontier.</p>
+      <span class="go">Open →</span>
+    </a>
+
+    <a class="card" href="second-tier.html">
+      <div class="num">III</div>
+      <h3>The Second Tier</h3>
+      <p>Whether training the laggards is a good use of resources. Being able to hand work down was worth ~30% of output; training budget was worth approximately nothing.</p>
+      <span class="go">Open →</span>
+    </a>
+
+    <a class="card" href="capability-gate.html">
+      <div class="num">IV</div>
+      <h3>The Capability Gate</h3>
+      <p>A write-up, not a simulation: what organisational attributes actually produce a capable second tier, and what data to collect before spending anything on it.</p>
+      <span class="go">Open →</span>
+    </a>
+
+  </div>
+
+  <p class="source-note">The paper is also available as <a href="when-machines-changed-the-job.md">plain markdown</a>, and the full source — including the simulations' code — is on <a href="https://github.com/hdpater/Technology-adoption">GitHub</a>.</p>
+
+  <footer>hdpater/Technology-adoption</footer>
+
+</div>
+</body>
+</html>
