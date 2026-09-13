@@ -1,8 +1,21 @@
-# When Machines Changed the Job: Historical Case Studies
+# When Machines Changed the Job
 
-*A quick reference on how workers coped with past technology transitions — for stakeholder conversations about AI agent adoption.*
+*A working paper on historical technology transitions and what they mean for AI agent adoption — for stakeholder conversations and internal policy.*
+
+## Executive Summary
+
+Every technology transition in this paper's record follows a similar shape: resistance tracks perceived unfairness and switching cost, not the technology's novelty; the harm concentrates in specific people during a specific window, not in "the workforce" as an aggregate; and the technologies that look inevitable in hindsight were, at the time, contested, mocked, or actively fought. **Part I** collects nineteen such transitions — from 15th-century scribes to the 2018 techlash — and extracts the patterns that repeat across all of them. **Part II** turns those patterns into an operational question for organisations adopting AI agents now: *is it worth spending resources to bring stragglers along, and if so, on what?* Three agent-based simulations (mechanics in **Appendix A**) were built to probe that, producing one robust, load-bearing finding — handing support work downward is worth roughly 30% of output — alongside one result (a large positive effect of training) that turned out to be a numerical artifact and is reported as such rather than quietly dropped.
+
+**Three findings worth carrying into a policy conversation:**
+- Resistance is driven by perceived unfairness and switching cost, not by novelty — negotiated transitions (dockworkers, case 8) look nothing like imposed ones (Luddites, case 2), even when the underlying technology is comparably disruptive.
+- "It always works out in retrospect" and "this transition is genuinely stressful right now" are not competing claims — they're verdicts on different points in time, and citing the first to dismiss the second is a category error (Part I, *Why "It Always Works Out"...*).
+- The capacity to absorb a new technology is earned by doing the work, not conferred by being trained on it — so whether an organisation navigates a transition well depends on whether a genuinely capable second tier exists, not on how much training budget it spent (Part II).
 
 ---
+
+# Part I — What History Shows
+
+Nineteen technology transitions, spanning six centuries. Each case is scored, where the evidence supports it, on what actually happened, how workers adjusted, what public opinion did before and after, and what named psychology or social-science study (if any) bears on it — flagged honestly where no such study could be found, rather than invented to fill the slot.
 
 ### 1. Printing Press → Scribes (1450s)
 Scribes and illuminators were skilled, respected professionals whose core task — hand-copying texts — was made obsolete almost overnight. Some guilds fought back hard: Paris scribes delayed the printing press's introduction to their city by 20 years, and in some places guilds destroyed presses outright.
@@ -163,9 +176,9 @@ Unlike most cases above, the internet's press record shows not a single flip but
 
 ---
 
-## More Press Emotion Arcs
+## Supplementary Press Arcs
 
-Five more technologies with a well-documented press paper trail showing the same swings — quoted directly so they can be checked against the original coverage:
+Five further technologies with the same well-documented press-swing pattern, kept in a lighter quick-reference format rather than the fuller case-study treatment above — quoted directly so they can be checked against the original coverage:
 
 **Nuclear power (1954 → 1979/86 → 2020s).** Lewis Strauss, US Atomic Energy Commission chairman, to the National Association of Science Writers, Sept 16, 1954: *"It is not too much to expect that our children will enjoy in their homes electrical energy too cheap to meter."* Three Mile Island (1979) and Chernobyl (1986) turned coverage toward lasting dread that outlived the technology's actual safety record. By the 2020s, nuclear was back in favorable press as a climate-change solution — three eras, one technology.
 
@@ -197,7 +210,11 @@ Named psychology/social-science frameworks that recur across these cases:
 
 ---
 
-## Why "It Always Works Out" Doesn't Reassure Anyone Mid-Transition
+## The Psychology of Change
+
+Two questions the case studies raise but don't answer on their own: why does "it always works out in retrospect" fail to reassure anyone living through a transition right now, and why does the same rollout split a population's reactions rather than moving everyone the same way? Both turn out to have direct answers in the psychology literature.
+
+### Why "It Always Works Out" Doesn't Reassure Anyone Mid-Transition
 
 A common objection to worrying about a new transition: technology improvements are almost always judged positively in retrospect, so why the anxiety now? The answer is that anticipation and retrospection are measuring different things, produced by different mechanisms — not contradictory findings about the same event.
 
@@ -208,9 +225,7 @@ A common objection to worrying about a new transition: technology improvements a
 
 **Bottom line:** stress and anxiety are concentrated in the *transition window*, while positive retrospective judgment is a verdict on the *settled endpoint*, delivered only once uncertainty has resolved and people have adapted. "It always works out" is true about endpoints and says nothing about the transition itself — which is exactly the period this paper's case studies show is where people get hurt.
 
----
-
-## Psychology of Novelty & Habit Disruption (Why Software Updates Split Opinion)
+### Psychology of Novelty & Habit Disruption (Why Software Updates Split Opinion)
 
 Software and interface rollouts are a live, present-day instance of the same pattern — and here the underlying psychological mechanisms are studied directly, separate from the historical press record above.
 
@@ -223,11 +238,13 @@ Software and interface rollouts are a live, present-day instance of the same pat
 
 *Caveat: the popular "change curve" (denial → frustration → ... → acceptance) that change-management consultants apply to software rollouts is adapted by analogy from grief-stage models, not an independently validated stage theory of technology adoption — useful as a rough narrative, not as established science.*
 
-**A modeling idea worth flagging:** Mandler's split — arousal from interruption, valence from appraisal — combined with status-quo-anchored expectations, is naturally suited to formal agent modeling. A BDI (belief-desire-intention) agent holding an anchored *expectation* of the future could treat an unexpected event as first producing "arousal" proportional to the size of the belief update, then a valence sign determined by whether the event moved the agent's desires closer to or further from being satisfied — which would let a simulation reproduce genuinely mixed populations of reactions (some agents made more optimistic, some more anxious) from the same external event, rather than assuming everyone reacts identically to "change."
+**A modeling idea worth flagging:** Mandler's split — arousal from interruption, valence from appraisal — combined with status-quo-anchored expectations, is naturally suited to formal agent modeling. A BDI (belief-desire-intention) agent holding an anchored *expectation* of the future could treat an unexpected event as first producing "arousal" proportional to the size of the belief update, then a valence sign determined by whether the event moved the agent's desires closer to or further from being satisfied — which would let a simulation reproduce genuinely mixed populations of reactions (some agents made more optimistic, some more anxious) from the same external event, rather than assuming everyone reacts identically to "change." *(This idea is what the first of the three simulations in Appendix A, Surprise Circumplex, was built to test.)*
 
 ---
 
-## What Repeats Every Time
+## Part I Conclusions: What Repeats Every Time
+
+Across nineteen transitions and six centuries, the same handful of patterns keep reappearing. None of them are specific to any one technology, which is exactly what makes them useful for reasoning about the next one.
 
 | Pattern | What it means for us |
 |---|---|
@@ -245,19 +262,13 @@ Software and interface rollouts are a live, present-day instance of the same pat
 
 # Part II — From History to Policy
 
-The case studies above describe what happened to other people. This part asks the operational question they raise for us: **if a transition is coming, is it worth spending resources to bring the stragglers along?** Three agent-based simulations were built to probe that. They are illustrative toys, not validated models of organisations, and the honest results include one substantial failure — which is reported here because it changes what the rest is worth.
+The case studies above describe what happened to other people. This part asks the operational question they raise for us: **if a transition is coming, is it worth spending resources to bring the stragglers along?**
 
-## The three instruments
-
-| Simulation | Question it probes | What it showed |
-|---|---|---|
-| **Surprise Circumplex** | What one person feels when a habit is interrupted | Arousal and valence are computed independently (Mandler, 1975), so a single change scatters a population across all four emotional quadrants rather than moving everyone the same way. Loss aversion is a hot-state effect that cools as arousal fades. |
-| **The Innovator's Wake** | How adoption spreads across a population over time | A frontier is sustained by *succession*, not distance: careers deplete, and replacing retirees at the cutting edge is what keeps a leading edge leading. Separation between adopters and laggards is not self-sustaining without it. |
-| **The Second Tier** | Whether training the laggards is a good use of resources | Being *able to hand work down* was worth ~30% of output. Training budget was worth approximately nothing. |
+Three agent-based simulations were built to probe that — a model of what one person feels when a habit is interrupted, a population-level model of how adoption spreads and who gets left behind, and an organisational model of training versus handing work down. They are illustrative toys, not validated models of organisations, and the honest results include one substantial failure, reported below because it changes what the rest is worth. Their mechanics, limitations, and links are in **Appendix A** for readers who want to inspect them directly; what follows are the findings.
 
 ## The one robust finding
 
-In the third simulation, three organisations ran on an identical stream of ideas, differing only in policy. The ability to hand support work downward was worth **~28–32% of organisational output**, stable across every population size and integration step tested. Without it, senior staff retained only ~25% of their effective speed — buried in supporting things they themselves had introduced.
+Three organisations ran on an identical stream of ideas, differing only in policy. The ability to hand support work downward was worth **~28–32% of organisational output**, stable across every population size and integration step tested. Without it, senior staff retained only ~25% of their effective speed — buried in supporting things they themselves had introduced.
 
 The mechanism is specific and it is the whole argument: **a handoff only succeeds when the receiver has already independently operated that particular technology.** When the model let work pass to anyone standing nearby, the entire effect vanished — because in a working organisation there is always somebody standing nearby. Proximity is free; capability is not.
 
@@ -310,6 +321,35 @@ None of this requires measuring "skill" — every construct has a proxy most org
 - **Codification as substitute:** short handoff latency despite bus factor one would mean codification substitutes for practice.
 - **Aggregation:** if delivery tracks the fastest contributors, improvements to the tail will not appear in output however real they are.
 
-## Standing caveats
+## Conclusions
 
-The production function (weakest-link / average / best-shot) is an *input* to this analysis, not an output — the model will report whatever your assumption implies, so it must be established empirically rather than assumed. The simulated laggard tail is thin, making weakest-link conclusions the least trustworthy. And every attribute tagged *judgement* is reasoning by analogy from a simplified model to real organisations, which is precisely where this kind of work usually goes wrong.
+Three claims this work supports with reasonable confidence, and one it doesn't. First, historically, resistance to a transition tracks fairness and bargaining stake far more reliably than it tracks the technology's raw disruptiveness — the clearest natural experiment in this paper is dockworkers versus Luddites, comparably disruptive automation with opposite outcomes because one was negotiated and the other imposed. Second, the psychological literature converges on a genuine distinction between the *transition window*, where arousal, loss aversion, and switching costs dominate, and the *settled endpoint*, where retrospective judgment is formed only after uncertainty resolves — collapsing the two, in either direction, is the most common reasoning error available here. Third, in the organisational simulation, the ability to hand work to someone who has genuinely absorbed a technology mattered roughly an order of magnitude more than training budget did — which, if it generalizes, argues for spending on rotation, slack, and assignment policy ahead of spending on instruction.
+
+What this work does *not* support is a training budget recommendation in either direction: the one simulation built to test it produced a result too sensitive to modeling choices to trust, and that result is reported rather than hidden precisely so it doesn't get cited as if it were. The production function governing organisational output (weakest-link, average, or best-shot) was treated throughout as an input supplied by the reader, not a finding — it was never estimated from real data, and it determines the sign of nearly everything downstream of it.
+
+## Opportunities for Further Development
+
+- **Estimate the production function, don't assume it.** Everything in Part II changes sign depending on whether an organisation's output tracks its slowest or fastest contributor. This is answerable from real delivery data (see "What to measure," above) and should be settled empirically before any of the rest of this is applied to a specific organisation.
+- **Replace illustrative parameters with real ones.** The simulations' agent traits (innovativeness, capacity, switching cost) were chosen for plausibility, not fit to data. Calibrating them against the bus-factor and handoff-latency measurements above would turn a demonstration into an actual forecasting tool.
+- **Test the assignment-policy intervention directly.** The model's crude lever was a training-time budget; the more interesting and untested lever it points to is deliberately assigning new technologies to *not* the fastest available person, and measuring whether that closes the capability gate faster than instruction does.
+- **Stress-test the weakest-link regime.** The simulated laggard tail was thin, making exactly the production-function setting where bringing up stragglers matters most also the least trustworthy result in this paper. A population with a genuinely heavy tail is the next thing to build.
+- **Build the BDI extension to Surprise Circumplex.** The arousal/valence-from-appraisal mechanism (Mandler, 1975) that seeded these simulations was implemented as a simplified toy; a proper belief-desire-intention agent — with an explicit, updatable expectation of the future rather than a single scalar — would let the model represent *why* a given event reads as good or bad news to a given agent, not just that it does.
+- **Test codification as a substitute for practice.** Flagged in Part II as judgement, not established: if well-documented organisations show shorter handoff latency at the same bus factor, codification is doing real work; if not, the attribute should be dropped rather than assumed.
+- **Connect Part I's multi-swing press pattern to Part II's organisational model.** The internet's three-phase swing (case 14) and the techlash more broadly suggest organisational sentiment about an internal rollout might also be non-monotonic — worth testing whether the "Second Tier" model produces a second wave of resistance once early problems with a handed-down technology surface, rather than settling once.
+
+---
+
+# Appendix A — The Simulations
+
+*For readers who want the mechanics behind Part II's findings, not just the conclusions. Each is a self-contained, interactive companion instrument — illustrative toys built to test a specific mechanism, with parameters chosen for plausibility rather than fit to real organisational data.*
+
+| Simulation | Question it probes | What it showed | Link |
+|---|---|---|---|
+| **Surprise Circumplex** | What one person feels when a habit is interrupted | Arousal and valence are computed independently (Mandler, 1975), so a single change scatters a population across all four emotional quadrants rather than moving everyone the same way. Loss aversion is a hot-state effect that cools as arousal fades. | [Open](https://claude.ai/code/artifact/ba12cd74-1240-41a6-9b48-3d3c3d2b1bda) |
+| **The Innovator's Wake** | How adoption spreads across a population over time | A frontier is sustained by *succession*, not distance: careers deplete, and replacing retirees at the cutting edge is what keeps a leading edge leading. Separation between adopters and laggards is not self-sustaining without it. | [Open](https://claude.ai/code/artifact/c240267c-0ccc-49ec-95c0-600b77995e15) |
+| **The Second Tier** | Whether training the laggards is a good use of resources | Being *able to hand work down* was worth ~30% of output. Training budget was worth approximately nothing, and an early positive result for training turned out to be a numerical artifact (see Part II). | [Open](https://claude.ai/code/artifact/68fcf39f-d7b9-4634-9c6c-a423031e732d) |
+| **The Capability Gate** *(write-up, not a simulation)* | What organisational attributes actually produce a capable second tier, and what data would inform the policy | Synthesizes the Second Tier's finding through Cohen & Levinthal's absorptive capacity; the source for the attribute and data-collection tables in Part II. | [Open](https://claude.ai/code/artifact/b1984b4d-da05-44ba-9ba1-4dd0ddc068d5) |
+
+*Note: these are Claude Artifacts and private by default. The links above will only resolve for people they've been explicitly shared with, via each page's share menu.*
+
+**Why the timestep story matters beyond one number.** Part II reports that the training effect swung from +58% to −1.4% purely as a function of integration timestep, while the handoff effect held steady at +28–32% throughout. That asymmetry is itself informative: an effect that survives changes to the model's internal plumbing is a property of the mechanism; an effect that doesn't is a property of the plumbing. Any reader extending these simulations should re-run their headline result at more than one timestep before trusting it — this was caught only because it was checked, not because it was expected.
